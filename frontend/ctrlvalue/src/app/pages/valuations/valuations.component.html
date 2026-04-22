@@ -1,0 +1,105 @@
+<div class="page-container">
+    <h1>Account Valuations</h1>
+
+    <div class="content-grid">
+        <div class="left-panel">
+            <!-- Valuation Form -->
+            <mat-card>
+                <mat-card-header>
+                    <mat-card-title>Record Valuation</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                    <form [formGroup]="valuationForm" (ngSubmit)="onSubmit()">
+
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Account</mat-label>
+                            <mat-select formControlName="accountId">
+                                <mat-option *ngFor="let account of accounts" [value]="account.id">
+                                    {{ account.name }}
+                                </mat-option>
+                            </mat-select>
+                            <mat-error *ngIf="valuationForm.get('accountId')?.hasError('required')">Account is
+                                required</mat-error>
+                        </mat-form-field>
+
+                        <div class="form-row">
+                            <mat-form-field appearance="outline">
+                                <mat-label>Value</mat-label>
+                                <input matInput type="number" formControlName="value" placeholder="0.00">
+                                <mat-error *ngIf="valuationForm.get('value')?.hasError('required')">Value is
+                                    required</mat-error>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline">
+                                <mat-label>Date</mat-label>
+                                <input matInput [matDatepicker]="picker" formControlName="asOfDate">
+                                <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                                <mat-datepicker #picker></mat-datepicker>
+                                <mat-error *ngIf="valuationForm.get('asOfDate')?.hasError('required')">Date is
+                                    required</mat-error>
+                            </mat-form-field>
+                        </div>
+
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Notes</mat-label>
+                            <textarea matInput formControlName="notes" rows="2"></textarea>
+                        </mat-form-field>
+
+                        <button mat-raised-button color="primary" type="submit" [disabled]="valuationForm.invalid">
+                            Record Value
+                        </button>
+                    </form>
+                </mat-card-content>
+            </mat-card>
+
+            <!-- History Table -->
+            <mat-card class="history-card" *ngIf="selectedAccountId">
+                <mat-card-header>
+                    <mat-card-title>History</mat-card-title>
+                </mat-card-header>
+                <div class="table-container">
+                    <table mat-table [dataSource]="dataSource">
+                        <ng-container matColumnDef="date">
+                            <th mat-header-cell *matHeaderCellDef> Date </th>
+                            <td mat-cell *matCellDef="let row"> {{row.asOfDate | date:'shortDate'}} </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="value">
+                            <th mat-header-cell *matHeaderCellDef> Value </th>
+                            <td mat-cell *matCellDef="let row"> {{row.value | number:'1.2-2'}} </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="notes">
+                            <th mat-header-cell *matHeaderCellDef> Notes </th>
+                            <td mat-cell *matCellDef="let row" class="notes-cell"> {{row.notes}} </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="actions">
+                            <th mat-header-cell *matHeaderCellDef> Actions </th>
+                            <td mat-cell *matCellDef="let row">
+                                <button mat-icon-button color="warn" (click)="deleteValuation(row.id)">
+                                    <mat-icon>delete</mat-icon>
+                                </button>
+                            </td>
+                        </ng-container>
+
+                        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                    </table>
+                </div>
+            </mat-card>
+        </div>
+
+        <div class="right-panel">
+            <mat-card class="chart-card" *ngIf="selectedAccountId">
+                <mat-card-header>
+                    <mat-card-title>Value Over Time</mat-card-title>
+                </mat-card-header>
+                <mat-card-content class="chart-content">
+                    <canvas baseChart [data]="lineChartData" [options]="lineChartOptions" [type]="'line'">
+                    </canvas>
+                </mat-card-content>
+            </mat-card>
+        </div>
+    </div>
+</div>

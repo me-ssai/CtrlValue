@@ -1,0 +1,82 @@
+services:
+
+  # ── PostgreSQL ───────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: ctrlvalue-db
+    environment:
+      POSTGRES_DB: ctrlvalue
+      POSTGRES_USER: ${DB_USER:-ctrlvalue}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-ctrlvalue}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # ── Backend (.NET 8 API) ─────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ctrlvalue-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:5000
+      ConnectionStrings__DefaultConnection: >-
+        Host=postgres;Database=ctrlvalue;Username=${DB_USER:-ctrlvalue};Password=${DB_PASSWORD};
+        SSL Mode=Disable
+      Jwt__Secret: ${JWT_SECRET:?JWT_SECRET is required}
+      Jwt__Issuer: ${JWT_ISSUER:-ctrlvalue}
+      Jwt__Audience: ${JWT_AUDIENCE:-ctrlvalue}
+      Jwt__ExpiryMinutes: ${JWT_EXPIRY_MINUTES:-60}
+      Encryption__Key: ${ENCRYPTION_KEY:?ENCRYPTION_KEY is required}
+      Email__SmtpHost: mailpit
+      Email__SmtpPort: 1025
+      Email__FromAddress: ${EMAIL_FROM:-noreply@ctrlvalue.local}
+      Email__FromName: ${EMAIL_FROM_NAME:-CtrlValue}
+      Email__FrontendBaseUrl: ${FRONTEND_URL:-http://localhost}
+      Cors__AllowedOrigins: ${FRONTEND_URL:-http://localhost}
+      # Optional — AI providers (leave blank to disable)
+      Agent__DefaultProvider: ${AGENT_PROVIDER:-OpenAI}
+      Agent__OpenAI__ApiKey: ${OPENAI_API_KEY:-}
+      Agent__OpenAI__ChatModel: ${OPENAI_CHAT_MODEL:-gpt-4o}
+      Agent__Anthropic__ApiKey: ${ANTHROPIC_API_KEY:-}
+      Agent__Anthropic__ChatModel: ${ANTHROPIC_CHAT_MODEL:-claude-sonnet-4-6}
+      # Optional — Azure Key Vault (leave blank to skip)
+      KeyVault__VaultUri: ${KEY_VAULT_URI:-}
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── Frontend (Angular + nginx) ───────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend/ctrlvalue
+      dockerfile: Dockerfile
+    container_name: ctrlvalue-web
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # ── Mailpit (dev SMTP + web UI) ──────────────────────────────────────────────
+  mailpit:
+    image: axllent/mailpit
+    container_name: ctrlvalue-mail
+    ports:
+      - "1025:1025"   # SMTP — backend sends here
+      - "8025:8025"   # Web UI — http://localhost:8025
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

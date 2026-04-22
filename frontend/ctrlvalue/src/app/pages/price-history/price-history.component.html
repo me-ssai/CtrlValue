@@ -1,0 +1,104 @@
+<div class="page-container">
+    <div class="page-header">
+        <h1>Price History</h1>
+
+        <div class="actions">
+            <input type="file" #fileInput (change)="onFileSelected($event)" accept=".csv" style="display: none;">
+            <button mat-stroked-button color="primary" (click)="fileInput.click()" [disabled]="!selectedInstrumentId">
+                <mat-icon>upload</mat-icon>
+                Import CSV
+            </button>
+        </div>
+    </div>
+
+    <div class="filters-container">
+        <mat-form-field appearance="outline" class="instrument-select">
+            <mat-label>Instrument</mat-label>
+            <mat-select [(ngModel)]="selectedInstrumentId" (selectionChange)="loadPriceHistory()">
+                <mat-option *ngFor="let instrument of instruments" [value]="instrument.id">
+                    {{ instrument.symbol }} - {{ instrument.name }}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Start Date</mat-label>
+            <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate" (dateChange)="loadPriceHistory()">
+            <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+            <mat-datepicker #startPicker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>End Date</mat-label>
+            <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate" (dateChange)="loadPriceHistory()">
+            <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+            <mat-datepicker #endPicker></mat-datepicker>
+        </mat-form-field>
+    </div>
+
+    <div class="chart-container mat-elevation-z2" *ngIf="selectedInstrumentId">
+        <canvas baseChart [data]="lineChartData" [options]="lineChartOptions" [legend]="lineChartLegend"
+            [type]="'line'">
+        </canvas>
+    </div>
+
+    <div class="table-container mat-elevation-z2">
+        <table mat-table [dataSource]="dataSource" matSort>
+
+            <!-- Date Column -->
+            <ng-container matColumnDef="date">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Date </th>
+                <td mat-cell *matCellDef="let row"> {{row.asOfDate | date:'mediumDate'}} </td>
+            </ng-container>
+
+            <!-- Close Column -->
+            <ng-container matColumnDef="close">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Close </th>
+                <td mat-cell *matCellDef="let row"> {{row.closePrice | number:'1.2-2'}} </td>
+            </ng-container>
+
+            <!-- Open Column -->
+            <ng-container matColumnDef="open">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Open </th>
+                <td mat-cell *matCellDef="let row"> {{row.openPrice ? (row.openPrice | number:'1.2-2') : '-'}} </td>
+            </ng-container>
+
+            <!-- High Column -->
+            <ng-container matColumnDef="high">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> High </th>
+                <td mat-cell *matCellDef="let row"> {{row.highPrice ? (row.highPrice | number:'1.2-2') : '-'}} </td>
+            </ng-container>
+
+            <!-- Low Column -->
+            <ng-container matColumnDef="low">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Low </th>
+                <td mat-cell *matCellDef="let row"> {{row.lowPrice ? (row.lowPrice | number:'1.2-2') : '-'}} </td>
+            </ng-container>
+
+            <!-- Volume Column -->
+            <ng-container matColumnDef="volume">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Volume </th>
+                <td mat-cell *matCellDef="let row"> {{row.volume ? (row.volume | number) : '-'}} </td>
+            </ng-container>
+
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef> Actions </th>
+                <td mat-cell *matCellDef="let row">
+                    <button mat-icon-button color="warn" (click)="deleteHistory(row.id)">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+            <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell" colspan="7">No price history available</td>
+            </tr>
+        </table>
+
+        <mat-paginator [pageSizeOptions]="[10, 25, 100]" aria-label="Select page of prices"></mat-paginator>
+    </div>
+</div>

@@ -1,0 +1,179 @@
+<mat-sidenav-container class="dashboard-layout" [class.sidebar-collapsed]="sidebarCollapsed" [autosize]="true">
+    <!-- Sidebar -->
+    <mat-sidenav mode="side" [opened]="true" class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-brand">
+                <img src="assets/logo-big-dark-bg.svg" class="brand-mark brand-logo" alt="Ctrl Value" />
+                <span class="brand-name">CTRL VALUE</span>
+            </div>
+        </div>
+
+        <mat-nav-list class="sidebar-nav">
+
+            <!-- Overview -->
+            <a mat-list-item routerLink="/dashboard" routerLinkActive="active">
+                <mat-icon matListItemIcon>dashboard</mat-icon>
+                <span matListItemTitle class="nav-label">Dashboard</span>
+            </a>
+
+            <mat-divider class="sidebar-divider"></mat-divider>
+
+            <!-- Money Group -->
+            <mat-expansion-panel class="nav-group" [expanded]="true" hideToggle>
+                <mat-expansion-panel-header class="nav-group-header">
+                    <mat-panel-title>
+                        <mat-icon class="group-icon">payments</mat-icon>
+                        <span class="nav-label nav-section-label">Money</span>
+                    </mat-panel-title>
+                </mat-expansion-panel-header>
+                <mat-nav-list class="nav-group-list">
+                    <a mat-list-item routerLink="/accounts" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}">
+                        <mat-icon matListItemIcon>account_balance</mat-icon>
+                        <span matListItemTitle class="nav-label">Accounts</span>
+                    </a>
+                    <a mat-list-item routerLink="/categories" routerLinkActive="active">
+                        <mat-icon matListItemIcon>category</mat-icon>
+                        <span matListItemTitle class="nav-label">Categories</span>
+                    </a>
+                    <a mat-list-item routerLink="/budgets" routerLinkActive="active">
+                        <mat-icon matListItemIcon>savings</mat-icon>
+                        <span matListItemTitle class="nav-label">Budgets</span>
+                    </a>
+                </mat-nav-list>
+            </mat-expansion-panel>
+
+            <!-- Investing Group -->
+            <mat-expansion-panel class="nav-group" hideToggle>
+                <mat-expansion-panel-header class="nav-group-header">
+                    <mat-panel-title>
+                        <mat-icon class="group-icon">show_chart</mat-icon>
+                        <span class="nav-label nav-section-label">Investing</span>
+                    </mat-panel-title>
+                </mat-expansion-panel-header>
+                <mat-nav-list class="nav-group-list">
+                    <a mat-list-item routerLink="/investing" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                        <mat-icon matListItemIcon>donut_large</mat-icon>
+                        <span matListItemTitle class="nav-label">Portfolio</span>
+                    </a>
+                    <a mat-list-item routerLink="/investing/stocks" routerLinkActive="active">
+                        <mat-icon matListItemIcon>candlestick_chart</mat-icon>
+                        <span matListItemTitle class="nav-label">Stocks</span>
+                    </a>
+                    <a mat-list-item routerLink="/investing/etfs" routerLinkActive="active">
+                        <mat-icon matListItemIcon>analytics</mat-icon>
+                        <span matListItemTitle class="nav-label">ETFs & Funds</span>
+                    </a>
+                    <a mat-list-item routerLink="/investing/bonds" routerLinkActive="active">
+                        <mat-icon matListItemIcon>receipt_long</mat-icon>
+                        <span matListItemTitle class="nav-label">Bonds</span>
+                    </a>
+                    <a mat-list-item routerLink="/investing/metals" routerLinkActive="active">
+                        <mat-icon matListItemIcon>diamond</mat-icon>
+                        <span matListItemTitle class="nav-label">Metals</span>
+                    </a>
+                    <a mat-list-item routerLink="/investing/crypto" routerLinkActive="active">
+                        <mat-icon matListItemIcon>currency_bitcoin</mat-icon>
+                        <span matListItemTitle class="nav-label">Crypto</span>
+                    </a>
+                    <a mat-list-item routerLink="/investing/real-estate" routerLinkActive="active">
+                        <mat-icon matListItemIcon>home_work</mat-icon>
+                        <span matListItemTitle class="nav-label">Real Estate</span>
+                    </a>
+                    <a mat-list-item routerLink="/investing/super" routerLinkActive="active">
+                        <mat-icon matListItemIcon>elderly</mat-icon>
+                        <span matListItemTitle class="nav-label">Superannuation</span>
+                    </a>
+                    <a mat-list-item routerLink="/investing/other" routerLinkActive="active">
+                        <mat-icon matListItemIcon>workspaces</mat-icon>
+                        <span matListItemTitle class="nav-label">Other</span>
+                    </a>
+                </mat-nav-list>
+            </mat-expansion-panel>
+
+            <!-- Management Group -->
+            <mat-expansion-panel class="nav-group" hideToggle>
+                <mat-expansion-panel-header class="nav-group-header">
+                    <mat-panel-title>
+                        <mat-icon class="group-icon">manage_accounts</mat-icon>
+                        <span class="nav-label nav-section-label">Management</span>
+                    </mat-panel-title>
+                </mat-expansion-panel-header>
+                <mat-nav-list class="nav-group-list">
+                    <a mat-list-item routerLink="/valuations" routerLinkActive="active">
+                        <mat-icon matListItemIcon>trending_up</mat-icon>
+                        <span matListItemTitle class="nav-label">Valuations</span>
+                    </a>
+                    <a mat-list-item routerLink="/depreciation-schedules" routerLinkActive="active">
+                        <mat-icon matListItemIcon>arrow_downward</mat-icon>
+                        <span matListItemTitle class="nav-label">Depreciation</span>
+                    </a>
+                </mat-nav-list>
+            </mat-expansion-panel>
+
+            <!-- Intelligence Group -->
+            <mat-expansion-panel class="nav-group" hideToggle>
+                <mat-expansion-panel-header class="nav-group-header">
+                    <mat-panel-title>
+                        <mat-icon class="group-icon">auto_awesome</mat-icon>
+                        <span class="nav-label nav-section-label">Intelligence</span>
+                    </mat-panel-title>
+                </mat-expansion-panel-header>
+                <mat-nav-list class="nav-group-list">
+                    <a mat-list-item routerLink="/intelligence/agent" routerLinkActive="active">
+                        <mat-icon matListItemIcon>smart_toy</mat-icon>
+                        <span matListItemTitle class="nav-label">CtrlValue Agent</span>
+                    </a>
+                </mat-nav-list>
+            </mat-expansion-panel>
+
+        </mat-nav-list>
+    </mat-sidenav>
+
+    <!-- Main Content -->
+    <mat-sidenav-content class="main-content">
+        <!-- Demo mode banner — shown only on demo.ctrlvalue.com -->
+        <app-demo-banner *ngIf="isDemoMode"></app-demo-banner>
+
+        <mat-toolbar class="topbar">
+            <button mat-icon-button (click)="toggleSidebar()" matTooltip="Toggle sidebar">
+                <mat-icon>menu</mat-icon>
+            </button>
+
+            <app-entity-selector *ngIf="authService.currentUser && !isDemoMode"></app-entity-selector>
+
+            <span class="spacer"></span>
+
+            <!-- Profile Menu (hidden in demo — no real user) -->
+            <div class="user-badge" *ngIf="authService.currentUser && !isDemoMode" [matMenuTriggerFor]="profileMenu">
+                <div class="user-avatar">
+                    {{ authService.currentUser?.firstName?.[0] }}{{ authService.currentUser?.lastName?.[0] }}
+                </div>
+                <span class="user-name">{{ authService.currentUser?.firstName }}</span>
+                <mat-icon class="user-chevron">expand_more</mat-icon>
+            </div>
+
+            <mat-menu #profileMenu="matMenu" class="profile-menu" xPosition="before">
+                <div class="profile-menu-header" mat-menu-item disabled>
+                    <div class="profile-name">{{ authService.currentUser?.firstName }} {{ authService.currentUser?.lastName }}</div>
+                    <div class="profile-email">{{ authService.currentUser?.email }}</div>
+                </div>
+                <mat-divider></mat-divider>
+                <button mat-menu-item routerLink="/settings" *ngIf="!isDemoMode">
+                    <mat-icon>settings</mat-icon>
+                    Settings
+                </button>
+                <button mat-menu-item (click)="logout()" *ngIf="!isDemoMode">
+                    <mat-icon>logout</mat-icon>
+                    Logout
+                </button>
+            </mat-menu>
+        </mat-toolbar>
+
+        <!-- Dynamic Ticker Strip -->
+        <app-ticker-strip></app-ticker-strip>
+
+        <div class="content">
+            <router-outlet></router-outlet>
+        </div>
+    </mat-sidenav-content>
+</mat-sidenav-container>

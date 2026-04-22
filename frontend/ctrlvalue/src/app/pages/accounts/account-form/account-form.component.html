@@ -1,0 +1,185 @@
+<h2 mat-dialog-title class="title">
+    <mat-icon style="vertical-align: middle; margin-right: 8px;">account_balance</mat-icon>
+    Add New Account
+</h2>
+
+<mat-dialog-content class="content">
+    <form [formGroup]="accountForm" (ngSubmit)="onSubmit()" class="account-form">
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Account Name</mat-label>
+            <input matInput formControlName="name" placeholder="e.g., Savings Account, Credit Card" required>
+            <mat-icon matPrefix>label</mat-icon>
+            <mat-error *ngIf="accountForm.get('name')?.hasError('required')">
+                Account name is required
+            </mat-error>
+        </mat-form-field>
+
+        <div class="form-row">
+            <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Account Type</mat-label>
+                <mat-select formControlName="accountType" required>
+                    <mat-option *ngFor="let type of accountTypes" [value]="type">{{ type }}</mat-option>
+                </mat-select>
+                <mat-icon matPrefix>category</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Currency</mat-label>
+                <input matInput formControlName="currency" maxlength="3" required>
+                <mat-icon matPrefix>attach_money</mat-icon>
+            </mat-form-field>
+        </div>
+
+        <!-- Starting Balance Anchor -->
+        <div class="balance-anchor-panel">
+            <div class="balance-anchor-header">
+                <mat-icon>account_balance_wallet</mat-icon>
+                <span>Starting Balance</span>
+            </div>
+            <p class="balance-anchor-hint">
+                Set your known balance at a specific date. Only transactions <strong>on or after this date</strong> will affect the running balance.
+            </p>
+            <div class="form-row">
+                <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>Balance as of date</mat-label>
+                    <input matInput [matDatepicker]="startingBalanceDatePicker" formControlName="startingBalanceDate">
+                    <mat-datepicker-toggle matIconSuffix [for]="startingBalanceDatePicker"></mat-datepicker-toggle>
+                    <mat-datepicker #startingBalanceDatePicker></mat-datepicker>
+                    <mat-hint>Defaults to today</mat-hint>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>Starting Balance</mat-label>
+                    <input matInput type="number" formControlName="startingBalance" step="0.01" placeholder="0.00">
+                    <mat-icon matPrefix>attach_money</mat-icon>
+                    <mat-hint>Enter 0 if unknown</mat-hint>
+                </mat-form-field>
+            </div>
+        </div>
+
+        <!-- Advanced (optional fields) -->
+        <mat-expansion-panel class="advanced-panel">
+            <mat-expansion-panel-header>
+                <mat-panel-title>
+                    <mat-icon>tune</mat-icon>
+                    Advanced
+                </mat-panel-title>
+                <mat-panel-description>Asset class, institution, notes & more</mat-panel-description>
+            </mat-expansion-panel-header>
+
+            <div class="radio-group-row">
+                <div class="radio-group-label">
+                    <mat-icon>inventory_2</mat-icon>
+                    <span>Asset Class</span>
+                    <app-help-icon
+                        text="What type of asset is this? CASH = bank/savings, STOCK/ETF = shares, PROPERTY = real estate, METAL = gold/silver, SUPER = superannuation."
+                        [detailed]="true"
+                        title="Asset Class"
+                        body="CASH — Bank accounts, savings, offset accounts&#10;STOCK / ETF — Shares, index funds, bonds&#10;PROPERTY — Real estate, land&#10;METAL — Gold, silver, precious metals&#10;VEHICLE — Cars, boats&#10;SUPER — Superannuation / pension funds&#10;CRYPTO — Cryptocurrency&#10;BUSINESS — Business interests&#10;OTHER — Anything else">
+                    </app-help-icon>
+                </div>
+                <mat-radio-group formControlName="assetClass" class="radio-chip-group">
+                    <mat-radio-button *ngFor="let cls of assetClasses" [value]="cls" class="radio-chip">
+                        {{ cls }}
+                    </mat-radio-button>
+                </mat-radio-group>
+            </div>
+
+            <div class="radio-group-row">
+                <div class="radio-group-label">
+                    <mat-icon>water_drop</mat-icon>
+                    <span>Liquidity Class</span>
+                    <app-help-icon
+                        text="How quickly can this be converted to cash? LIQUID = days, SEMI_LIQUID = weeks/months, ILLIQUID = years, LOCKED = can't be sold."
+                        [detailed]="true"
+                        title="Liquidity Class"
+                        body="LIQUID — Cash, bank accounts. Accessible immediately.&#10;SEMI_LIQUID — Stocks, ETFs. Sellable within days–weeks.&#10;ILLIQUID — Property, vehicles. Takes months to sell.&#10;LOCKED — Super, fixed-term deposits. Cannot be accessed early.">
+                    </app-help-icon>
+                </div>
+                <mat-radio-group formControlName="liquidityClass" class="radio-chip-group">
+                    <mat-radio-button *ngFor="let cls of liquidityClasses" [value]="cls" class="radio-chip">
+                        {{ cls }}
+                    </mat-radio-button>
+                </mat-radio-group>
+            </div>
+
+            <div class="form-row">
+                <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>Institution</mat-label>
+                    <input matInput formControlName="institution" placeholder="e.g., ANZ, Commonwealth Bank"
+                           [matAutocomplete]="institutionAc">
+                    <mat-icon matPrefix>business</mat-icon>
+                    <mat-autocomplete #institutionAc="matAutocomplete">
+                        <mat-option *ngFor="let s of filteredInstitutions" [value]="s">{{ s }}</mat-option>
+                    </mat-autocomplete>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>Account Number</mat-label>
+                    <input matInput formControlName="accountNumber">
+                    <mat-icon matPrefix>tag</mat-icon>
+                </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Credit Limit (for liabilities)</mat-label>
+                <input matInput type="number" formControlName="creditLimit" step="0.01" placeholder="0.00">
+                <mat-icon matPrefix>credit_card</mat-icon>
+            </mat-form-field>
+
+            <div class="form-row">
+                <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>Opened Date</mat-label>
+                    <input matInput [matDatepicker]="openedAtPicker" formControlName="openedAt">
+                    <mat-datepicker-toggle matIconSuffix [for]="openedAtPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #openedAtPicker></mat-datepicker>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>Closed Date</mat-label>
+                    <input matInput [matDatepicker]="closedAtPicker" formControlName="closedAt">
+                    <mat-datepicker-toggle matIconSuffix [for]="closedAtPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #closedAtPicker></mat-datepicker>
+                </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>External ID</mat-label>
+                <input matInput formControlName="externalId" placeholder="e.g., ID from external system">
+                <mat-icon matPrefix>link</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Notes</mat-label>
+                <textarea matInput formControlName="notes" rows="3"
+                    placeholder="Optional notes about this account"></textarea>
+                <mat-icon matPrefix>notes</mat-icon>
+            </mat-form-field>
+
+            <div class="checkbox-row">
+                <mat-checkbox formControlName="isOffsetAccount" color="primary">
+                    Mark as Offset Account
+                </mat-checkbox>
+                <span class="checkbox-hint">Link this account as an offset against a home loan</span>
+                <app-help-icon
+                    text="An offset account reduces the interest charged on a linked home loan by offsetting the loan balance."
+                    [detailed]="true"
+                    title="Offset Account"
+                    body="An offset account is a transaction account linked to your mortgage. The balance in this account is 'offset' against your loan balance, reducing the interest you pay.&#10;&#10;Example: $500,000 loan with $50,000 in offset = interest charged on $450,000 only.">
+                </app-help-icon>
+            </div>
+        </mat-expansion-panel>
+    </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="cancel()" [disabled]="loading">
+        Cancel
+    </button>
+    <button mat-raised-button color="primary" type="button" (click)="onSubmit()"
+        [disabled]="loading || accountForm.invalid">
+        <mat-icon *ngIf="loading">refresh</mat-icon>
+        <mat-icon *ngIf="!loading">save</mat-icon>
+        Create Account
+    </button>
+</mat-dialog-actions>

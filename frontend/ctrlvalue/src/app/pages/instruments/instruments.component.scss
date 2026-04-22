@@ -1,0 +1,29 @@
+// Instrument-specific chip styles only
+.type-chip {
+    font-size: 12px;
+    min-height: 24px;
+
+    &.stock {
+        --mdc-chip-elevated-container-color: color-mix(in srgb, var(--color-accent-primary) 15%, transparent);
+        --mdc-chip-label-text-color: var(--color-accent-primary);
+    }
+
+    &.etf {
+        --mdc-chip-elevated-container-color: color-mix(in srgb, var(--color-accent-success) 15%, transparent);
+        --mdc-chip-label-text-color: var(--color-accent-success);
+    }
+
+    &.crypto {
+        --mdc-chip-elevated-container-color: color-mix(in srgb, var(--color-accent-warning) 15%, transparent);
+        --mdc-chip-label-text-color: var(--color-accent-warning);
+    }
+
+    &.metal {
+        --mdc-chip-elevated-container-color: color-mix(in srgb, var(--color-accent-tertiary) 15%, transparent);
+        --mdc-chip-label-text-color: var(--color-accent-tertiary);
+    }
+}
+
+.actions-cell {
+    white-space: nowrap;
+}

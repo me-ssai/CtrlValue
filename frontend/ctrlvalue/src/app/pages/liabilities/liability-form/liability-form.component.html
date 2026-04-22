@@ -1,0 +1,71 @@
+<h2 mat-dialog-title>
+    <mat-icon>credit_card</mat-icon>
+    {{ isEditMode ? 'Edit Liability' : 'Add Liability' }}
+</h2>
+
+<mat-dialog-content>
+    <form [formGroup]="liabilityForm" (ngSubmit)="onSubmit()" class="dialog-form">
+        <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Liability Name</mat-label>
+            <input matInput formControlName="name" placeholder="e.g., Car Loan, Mortgage" required>
+            <mat-icon matPrefix>label</mat-icon>
+            <mat-error *ngIf="liabilityForm.get('name')?.hasError('required')">Liability name is required</mat-error>
+        </mat-form-field>
+
+        <div class="row g-3">
+            <div class="col-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Category</mat-label>
+                    <input matInput formControlName="category" placeholder="e.g., Vehicle, Property" required>
+                    <mat-icon matPrefix>category</mat-icon>
+                    <mat-error *ngIf="liabilityForm.get('category')?.hasError('required')">Category is
+                        required</mat-error>
+                </mat-form-field>
+            </div>
+            <div class="col-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Currency</mat-label>
+                    <input matInput formControlName="currency" maxlength="3" required>
+                    <mat-icon matPrefix>attach_money</mat-icon>
+                </mat-form-field>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Outstanding Amount</mat-label>
+                    <input matInput type="number" formControlName="outstandingAmount" step="0.01" min="0"
+                        placeholder="0.00" required>
+                    <mat-icon matPrefix>payments</mat-icon>
+                    <mat-error *ngIf="liabilityForm.get('outstandingAmount')?.hasError('required')">Amount is
+                        required</mat-error>
+                </mat-form-field>
+            </div>
+            <div class="col-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Interest Rate (%)</mat-label>
+                    <input matInput type="number" formControlName="interestRate" step="0.01" min="0" max="100"
+                        placeholder="0.00">
+                    <mat-icon matPrefix>percent</mat-icon>
+                </mat-form-field>
+            </div>
+        </div>
+
+        <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" rows="3"
+                placeholder="Optional notes about this liability"></textarea>
+            <mat-icon matPrefix>notes</mat-icon>
+        </mat-form-field>
+    </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button (click)="cancel()" [disabled]="loading">Cancel</button>
+    <button mat-raised-button color="primary" [disabled]="loading || liabilityForm.invalid" (click)="onSubmit()">
+        <mat-icon *ngIf="loading">refresh</mat-icon>
+        <mat-icon *ngIf="!loading">save</mat-icon>
+        {{ isEditMode ? 'Update Liability' : 'Create Liability' }}
+    </button>
+</mat-dialog-actions>

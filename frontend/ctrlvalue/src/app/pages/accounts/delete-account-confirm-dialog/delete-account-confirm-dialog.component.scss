@@ -1,0 +1,63 @@
+.dialog-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.account-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.account-label {
+    font-size: var(--font-size-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+    font-weight: 600;
+}
+
+.account-name {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+}
+
+.warning-text {
+    font-size: var(--font-size-sm);
+}
+
+.impact-card {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    background: var(--gradient-card);
+}
+
+.impact-title {
+    font-weight: 600;
+    margin-bottom: var(--space-3);
+}
+
+.impact-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.impact-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.impact-note {
+    display: flex;
+    gap: var(--space-2);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+}
+
+.dialog-actions {
+    padding-top: var(--space-2);
+}

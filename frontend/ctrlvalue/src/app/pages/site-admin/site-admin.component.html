@@ -1,0 +1,80 @@
+<div class="admin-shell">
+    <div class="admin-header">
+        <h1>Site Admin Dashboard</h1>
+        <p class="subtitle">Manage clients and users for your workspace</p>
+    </div>
+
+    <!-- Tab nav -->
+    <div class="tab-bar">
+        <button [class.active]="activeTab === 'clients'" (click)="activeTab = 'clients'">Clients</button>
+        <button [class.active]="activeTab === 'users'" (click)="activeTab = 'users'">Users</button>
+    </div>
+
+    <!-- Clients Tab -->
+    <div *ngIf="activeTab === 'clients'" class="tab-content">
+        <div *ngFor="let entity of entities" class="client-card">
+            <div class="client-card-header">
+                <div>
+                    <h3>{{ entity.name }}</h3>
+                    <span class="muted">{{ entity.baseCurrency }}</span>
+                </div>
+                <div class="card-actions">
+                    <button class="btn-sm btn-primary" (click)="openInvite(entity.id)">+ Invite User</button>
+                    <button class="btn-sm btn-danger" (click)="deleteEntity(entity)">Delete</button>
+                </div>
+            </div>
+
+            <!-- Inline invite form -->
+            <div *ngIf="inviteEntityId === entity.id" class="invite-form">
+                <input [(ngModel)]="inviteEmail" placeholder="Email to invite..." class="search-input" />
+                <button class="btn-sm btn-primary" (click)="sendInvite(entity.id)">Send Invite</button>
+                <button class="btn-sm btn-secondary" (click)="inviteEntityId = ''">Cancel</button>
+            </div>
+
+            <!-- Linked users -->
+            <div class="linked-users">
+                <span class="user-chip" *ngFor="let u of getUsersForEntity(entity.id)">
+                    {{ u.firstName }} {{ u.lastName }}
+                    <span class="chip-role">{{ getRoleForEntity(u, entity.id) }}</span>
+                    <button class="chip-remove" (click)="removeUser(entity.id, u.id)"
+                        title="Remove from entity">✕</button>
+                </span>
+                <em *ngIf="getUsersForEntity(entity.id).length === 0" class="muted">No users linked yet</em>
+            </div>
+        </div>
+        <div *ngIf="entities.length === 0" class="empty-state">No client profiles found for your workspace.</div>
+    </div>
+
+    <!-- Users Tab -->
+    <div *ngIf="activeTab === 'users'" class="tab-content">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Entities</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let user of tenantUsers">
+                        <td>{{ user.firstName }} {{ user.lastName }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            <span class="badge" *ngFor="let e of user.entities">{{ e.entityName }}</span>
+                            <em *ngIf="user.entities.length === 0" class="muted">None</em>
+                        </td>
+                        <td><span class="badge">{{ user.role }}</span></td>
+                        <td>
+                            <button class="btn-sm btn-secondary" (click)="resetPassword(user)">Reset Password</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div *ngIf="statusMessage" class="status-toast" [class.error]="isError">{{ statusMessage }}</div>
+</div>

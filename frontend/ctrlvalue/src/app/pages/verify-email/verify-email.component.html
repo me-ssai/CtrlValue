@@ -1,0 +1,72 @@
+<div class="d-flex align-items-center justify-content-center min-vh-100 position-relative overflow-hidden p-3">
+    <div class="auth-glow"></div>
+
+    <mat-card class="auth-card animate-fade-in-up">
+
+        <!-- Loading -->
+        <ng-container *ngIf="state === 'loading'">
+            <mat-card-header class="auth-header">
+                <div class="auth-logo">
+                    <mat-icon>mark_email_read</mat-icon>
+                </div>
+                <mat-card-title>Verifying your email</mat-card-title>
+                <mat-card-subtitle>Please wait a moment…</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content class="text-center py-4">
+                <mat-spinner diameter="48" class="mx-auto"></mat-spinner>
+            </mat-card-content>
+        </ng-container>
+
+        <!-- Expired -->
+        <ng-container *ngIf="state === 'expired'">
+            <mat-card-header class="auth-header">
+                <div class="auth-logo">
+                    <mat-icon>schedule</mat-icon>
+                </div>
+                <mat-card-title>Link expired</mat-card-title>
+                <mat-card-subtitle>{{ errorMessage }}</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+                <ng-container *ngIf="!resendSent">
+                    <p class="text-muted small text-center mb-3">
+                        Didn't receive the new email? Enter your address to resend.
+                    </p>
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Email</mat-label>
+                        <input matInput type="email" [(ngModel)]="resendEmail" placeholder="you@example.com">
+                        <mat-icon matPrefix>email</mat-icon>
+                    </mat-form-field>
+                    <p class="text-danger small" *ngIf="resendError">{{ resendError }}</p>
+                    <button mat-flat-button color="primary" class="w-100 mb-2"
+                            [disabled]="resendLoading || !resendEmail"
+                            (click)="resendVerification()">
+                        {{ resendLoading ? 'Sending...' : 'Resend verification email' }}
+                    </button>
+                </ng-container>
+                <p class="text-success text-center" *ngIf="resendSent">
+                    ✓ A new verification email has been sent.
+                </p>
+            </mat-card-content>
+            <mat-card-actions class="auth-actions">
+                <button mat-stroked-button class="w-100" (click)="goToLogin()">Back to Login</button>
+            </mat-card-actions>
+        </ng-container>
+
+        <!-- Error -->
+        <ng-container *ngIf="state === 'error'">
+            <mat-card-header class="auth-header">
+                <div class="auth-logo error-logo">
+                    <mat-icon>error_outline</mat-icon>
+                </div>
+                <mat-card-title>Verification failed</mat-card-title>
+                <mat-card-subtitle>{{ errorMessage || 'This link is invalid or has already been used.' }}</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-actions class="auth-actions">
+                <button mat-flat-button color="primary" class="w-100" (click)="goToLogin()">
+                    Back to Login
+                </button>
+            </mat-card-actions>
+        </ng-container>
+
+    </mat-card>
+</div>

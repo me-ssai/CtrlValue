@@ -1,0 +1,36 @@
+version: 2
+
+updates:
+  # Angular frontend — group Angular packages to reduce PR noise
+  - package-ecosystem: npm
+    directory: /frontend/ctrlvalue
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      angular:
+        patterns:
+          - "@angular/*"
+          - "@angular-devkit/*"
+          - "@schematics/*"
+      angular-material:
+        patterns:
+          - "@angular/material"
+          - "@angular/cdk"
+    open-pull-requests-limit: 5
+
+  # .NET backend
+  - package-ecosystem: nuget
+    directory: /backend
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+
+  # GitHub Actions — keep workflow actions up to date
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5

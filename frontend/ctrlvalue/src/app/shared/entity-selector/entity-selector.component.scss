@@ -1,0 +1,49 @@
+.entity-selector {
+    display: flex;
+    align-items: center;
+}
+
+.entity-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+
+    .entity-name {
+        font-weight: 500;
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+.entity-menu-header {
+    font-size: 12px;
+    color: var(--color-text-primary);
+    padding: 8px 16px;
+    cursor: default !important;
+}
+
+.entity-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    .entity-item-name {
+        font-weight: 500;
+    }
+
+    .entity-item-role {
+        font-size: 12px;
+        color: var(--color-text-secondary);
+    }
+}
+
+button.active {
+    background: color-mix(in srgb, var(--color-accent-primary) 15%, transparent);
+
+    .active-icon {
+        color: var(--color-accent-primary);
+    }
+}

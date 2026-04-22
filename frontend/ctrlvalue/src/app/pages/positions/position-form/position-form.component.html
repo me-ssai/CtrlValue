@@ -1,0 +1,103 @@
+<h2 mat-dialog-title>
+    <mat-icon>pie_chart</mat-icon>
+    {{ isEditMode ? 'Edit Position' : 'New Position' }}
+</h2>
+
+<mat-dialog-content>
+    <form [formGroup]="positionForm" (ngSubmit)="onSubmit()" class="dialog-form">
+        <div class="row g-3">
+            <div class="col-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Account</mat-label>
+                    <mat-select formControlName="accountId">
+                        <mat-option *ngFor="let account of accounts" [value]="account.id">{{ account.name
+                            }}</mat-option>
+                    </mat-select>
+                    <mat-icon matPrefix>account_balance</mat-icon>
+                    <mat-hint *ngIf="selectedAccountBalance !== null">
+                        Cash available: {{ selectedAccountBalance | currency:selectedAccountCurrency }}
+                        <span *ngIf="positionForm.value.costBasisTotal && positionForm.value.costBasisTotal > (selectedAccountBalance || 0)"
+                            class="text-warn ms-1" matTooltip="Cost exceeds available cash">⚠</span>
+                    </mat-hint>
+                    <mat-error *ngIf="positionForm.get('accountId')?.hasError('required')">Account is
+                        required</mat-error>
+                </mat-form-field>
+            </div>
+            <div class="col-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Instrument</mat-label>
+                    <mat-select formControlName="instrumentId">
+                        <mat-option *ngFor="let instrument of instruments" [value]="instrument.id">
+                            {{ instrument.symbol }} - {{ instrument.name }}
+                        </mat-option>
+                    </mat-select>
+                    <mat-icon matPrefix>show_chart</mat-icon>
+                    <mat-error *ngIf="positionForm.get('instrumentId')?.hasError('required')">Instrument is
+                        required</mat-error>
+                </mat-form-field>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Quantity</mat-label>
+                    <input matInput type="number" formControlName="quantity" placeholder="0.00">
+                    <mat-icon matPrefix>numbers</mat-icon>
+                    <mat-hint *ngIf="isDerived('quantity')">Auto-calculated</mat-hint>
+                    <mat-error *ngIf="positionForm.get('quantity')?.hasError('required')">Quantity is
+                        required</mat-error>
+                </mat-form-field>
+            </div>
+            <div class="col-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Unit</mat-label>
+                    <mat-select formControlName="unit">
+                        <mat-option *ngFor="let u of metalUnits" [value]="u">{{ metalUnitLabels[u] }}</mat-option>
+                    </mat-select>
+                    <mat-icon matPrefix>straighten</mat-icon>
+                    <mat-error *ngIf="positionForm.get('unit')?.hasError('required')">Unit is required</mat-error>
+                </mat-form-field>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-4">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Cost Per Unit</mat-label>
+                    <span matPrefix>$&nbsp;</span>
+                    <input matInput type="number" formControlName="costBasisPerUnit" placeholder="0.00">
+                    <mat-hint *ngIf="isDerived('costBasisPerUnit')">Auto-calculated</mat-hint>
+                </mat-form-field>
+            </div>
+            <div class="col-4">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Total Cost Basis</mat-label>
+                    <span matPrefix>$&nbsp;</span>
+                    <input matInput type="number" formControlName="costBasisTotal" placeholder="0.00">
+                    <mat-hint *ngIf="isDerived('costBasisTotal')">Auto-calculated</mat-hint>
+                    <mat-error *ngIf="positionForm.get('costBasisTotal')?.hasError('required')">Cost Basis is
+                        required</mat-error>
+                </mat-form-field>
+            </div>
+            <div class="col-4">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Date Opened</mat-label>
+                    <input matInput [matDatepicker]="picker" formControlName="openedAt">
+                    <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                    <mat-datepicker #picker></mat-datepicker>
+                    <mat-error *ngIf="positionForm.get('openedAt')?.hasError('required')">Date is required</mat-error>
+                </mat-form-field>
+            </div>
+        </div>
+    </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button (click)="cancel()" [disabled]="loading">Cancel</button>
+    <button mat-raised-button color="primary" [disabled]="positionForm.invalid || loading" (click)="onSubmit()">
+        <mat-icon *ngIf="loading">refresh</mat-icon>
+        <mat-icon *ngIf="!loading">save</mat-icon>
+        {{ isEditMode ? 'Update Position' : 'Create Position' }}
+    </button>
+</mat-dialog-actions>

@@ -1,0 +1,462 @@
+<div class="onboarding-wrapper">
+  <div class="onboarding-container">
+
+    <!-- Header -->
+    <div class="onboarding-header">
+      <div class="brand">
+        <img src="assets/logo-big-light-bg.svg" alt="Ctrl Value" class="brand-icon brand-logo" />
+        <span class="brand-name">Ctrl Value</span>
+      </div>
+      <p class="welcome-text">Welcome, {{ currentUser?.firstName }}! Let's get you set up.</p>
+    </div>
+
+    <!-- Stepper -->
+    <mat-stepper #stepper linear="false" animationDuration="300ms" class="onboarding-stepper">
+
+      <!-- ─── Step 1: Welcome & Workspace ──────────────────────────────────── -->
+      <mat-step label="Your Workspace">
+        <div class="step-content">
+          <div class="step-header">
+            <mat-icon class="step-icon">workspace_premium</mat-icon>
+            <div>
+              <h2>Set up your workspace</h2>
+              <p class="step-description">Give your financial workspace a name and choose your default currency.</p>
+            </div>
+          </div>
+
+          <form [formGroup]="workspaceForm" class="step-form">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Workspace name</mat-label>
+              <mat-icon matPrefix>edit</mat-icon>
+              <input matInput formControlName="workspaceName" placeholder="e.g. Smith Family Finances" />
+              <mat-hint>This is just for display — you can change it any time in Settings.</mat-hint>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Base currency</mat-label>
+              <mat-icon matPrefix>attach_money</mat-icon>
+              <mat-select formControlName="baseCurrency">
+                <mat-option *ngFor="let c of currencies" [value]="c">{{ c }}</mat-option>
+              </mat-select>
+              <mat-hint>All balances will be displayed in this currency by default.</mat-hint>
+            </mat-form-field>
+          </form>
+
+          <div class="step-actions">
+            <button mat-flat-button color="primary" (click)="saveWorkspace()" [disabled]="workspaceForm.invalid || savingWorkspace">
+              <mat-icon>arrow_forward</mat-icon>
+              {{ savingWorkspace ? 'Saving...' : 'Next: Add Bank Accounts' }}
+            </button>
+            <button mat-button color="accent" (click)="stepper.next()">Skip this step</button>
+          </div>
+        </div>
+      </mat-step>
+
+      <!-- ─── Step 2: Bank Accounts ─────────────────────────────────────────── -->
+      <mat-step label="Bank Accounts">
+        <div class="step-content">
+          <div class="step-header">
+            <mat-icon class="step-icon">account_balance</mat-icon>
+            <div>
+              <h2>Add your bank accounts</h2>
+              <p class="step-description">Start with your everyday accounts — savings, cheque, offset. You can add more later.</p>
+            </div>
+          </div>
+
+          <!-- Added accounts list -->
+          <div class="added-list" *ngIf="addedBankAccounts.length > 0">
+            <p class="added-label">Added so far:</p>
+            <div class="account-chips">
+              <mat-chip *ngFor="let a of addedBankAccounts" class="account-chip"
+                        [disabled]="deletingId === a.id">
+                <mat-icon matChipAvatar>account_balance</mat-icon>
+                {{ a.name }}<span *ngIf="a.institution"> · {{ a.institution }}</span>
+                <mat-icon matChipRemove (click)="removeAccount(a, addedBankAccounts)">
+                  {{ deletingId === a.id ? 'hourglass_empty' : 'cancel' }}
+                </mat-icon>
+              </mat-chip>
+            </div>
+          </div>
+
+          <!-- Add account form -->
+          <mat-card class="add-card" appearance="outlined">
+            <mat-card-content>
+              <p class="add-card-title"><mat-icon>add_circle_outline</mat-icon> Add an account</p>
+              <form [formGroup]="bankAccountForm" class="step-form">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Account name *</mat-label>
+                  <input matInput formControlName="name" placeholder="e.g. ANZ Everyday, ING Savings" />
+                </mat-form-field>
+
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>Bank / Institution</mat-label>
+                    <input matInput formControlName="institution" placeholder="e.g. ANZ, CommBank"
+                           [matAutocomplete]="bankInstAc" />
+                    <mat-autocomplete #bankInstAc="matAutocomplete">
+                      <mat-option *ngFor="let s of filteredBankInstitutions" [value]="s">{{ s }}</mat-option>
+                    </mat-autocomplete>
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>Account number (optional)</mat-label>
+                    <input matInput formControlName="accountNumber" placeholder="Last 4 digits" />
+                  </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>Current balance</mat-label>
+                    <mat-icon matPrefix>attach_money</mat-icon>
+                    <input matInput type="number" formControlName="startingBalance" step="0.01" placeholder="0.00" />
+                    <mat-hint>Enter 0 if unknown</mat-hint>
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>Balance as of</mat-label>
+                    <input matInput [matDatepicker]="bankBalancePicker" formControlName="startingBalanceDate" />
+                    <mat-datepicker-toggle matIconSuffix [for]="bankBalancePicker"></mat-datepicker-toggle>
+                    <mat-datepicker #bankBalancePicker></mat-datepicker>
+                    <mat-hint>Defaults to today</mat-hint>
+                  </mat-form-field>
+                </div>
+              </form>
+
+              <button mat-flat-button color="primary" (click)="addBankAccount()" [disabled]="bankAccountForm.invalid || loading">
+                <mat-icon>add</mat-icon>
+                {{ loading ? 'Adding...' : 'Add Account' }}
+              </button>
+            </mat-card-content>
+          </mat-card>
+
+          <div class="step-actions">
+            <button mat-flat-button color="primary" matStepperNext>
+              <mat-icon>arrow_forward</mat-icon>
+              Next: Add Assets
+            </button>
+            <button mat-button (click)="stepper.previous()">Back</button>
+          </div>
+        </div>
+      </mat-step>
+
+      <!-- ─── Step 3: Assets ────────────────────────────────────────────────── -->
+      <mat-step label="Assets">
+        <div class="step-content">
+          <div class="step-header">
+            <mat-icon class="step-icon">home_work</mat-icon>
+            <div>
+              <h2>Add your assets</h2>
+              <p class="step-description">Real estate, vehicles, super — anything you own that has value. You can add more detail later.</p>
+            </div>
+          </div>
+
+          <!-- Added assets -->
+          <div class="added-list" *ngIf="addedAssets.length > 0">
+            <p class="added-label">Added so far:</p>
+            <div class="account-chips">
+              <mat-chip *ngFor="let a of addedAssets" class="account-chip"
+                        [disabled]="deletingId === a.id">
+                <mat-icon matChipAvatar>{{ getAssetClassIcon(a.assetClass) }}</mat-icon>
+                {{ a.name }}
+                <mat-icon matChipRemove (click)="removeAccount(a, addedAssets)">
+                  {{ deletingId === a.id ? 'hourglass_empty' : 'cancel' }}
+                </mat-icon>
+              </mat-chip>
+            </div>
+          </div>
+
+          <!-- Type chooser -->
+          <div class="type-grid" *ngIf="!selectedAssetType">
+            <mat-card *ngFor="let card of assetTypeCards" class="type-card" (click)="selectAssetType(card.type)" role="button">
+              <mat-card-content>
+                <mat-icon class="type-icon">{{ card.icon }}</mat-icon>
+                <p>{{ card.label }}</p>
+              </mat-card-content>
+            </mat-card>
+          </div>
+
+          <!-- Asset form (shown after type selection) -->
+          <mat-card class="add-card" appearance="outlined" *ngIf="selectedAssetType">
+            <mat-card-content>
+              <p class="add-card-title">
+                <mat-icon>{{ getCardIcon(assetTypeCards, selectedAssetType) }}</mat-icon>
+                {{ getCardLabel(assetTypeCards, selectedAssetType) }}
+              </p>
+              <form [formGroup]="assetForm" class="step-form">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Asset name *</mat-label>
+                  <input matInput formControlName="name" placeholder="e.g. Family Home, Tesla Model 3" />
+                </mat-form-field>
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>Institution / Manager</mat-label>
+                    <input matInput formControlName="institution"
+                           [matAutocomplete]="assetInstAc" />
+                    <mat-autocomplete #assetInstAc="matAutocomplete">
+                      <mat-option *ngFor="let s of filteredAssetInstitutions" [value]="s">{{ s }}</mat-option>
+                    </mat-autocomplete>
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>Current value (approx)</mat-label>
+                    <mat-icon matPrefix>attach_money</mat-icon>
+                    <input matInput type="number" formControlName="startingBalance" step="0.01" />
+                  </mat-form-field>
+                </div>
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>Value as of</mat-label>
+                    <input matInput [matDatepicker]="assetDatePicker" formControlName="startingBalanceDate" />
+                    <mat-datepicker-toggle matIconSuffix [for]="assetDatePicker"></mat-datepicker-toggle>
+                    <mat-datepicker #assetDatePicker></mat-datepicker>
+                    <mat-hint>Defaults to today</mat-hint>
+                  </mat-form-field>
+                </div>
+              </form>
+              <div class="form-actions">
+                <button mat-flat-button color="primary" (click)="addAsset()" [disabled]="assetForm.invalid || loading">
+                  <mat-icon>add</mat-icon> {{ loading ? 'Adding...' : 'Add Asset' }}
+                </button>
+                <button mat-button (click)="selectedAssetType = null">Cancel</button>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <div class="step-actions">
+            <button mat-flat-button color="primary" matStepperNext>
+              <mat-icon>arrow_forward</mat-icon>
+              Next: Add Liabilities
+            </button>
+            <button mat-button (click)="stepper.previous()">Back</button>
+          </div>
+        </div>
+      </mat-step>
+
+      <!-- ─── Step 4: Liabilities ────────────────────────────────────────────── -->
+      <mat-step label="Liabilities">
+        <div class="step-content">
+          <div class="step-header">
+            <mat-icon class="step-icon">receipt_long</mat-icon>
+            <div>
+              <h2>Add your liabilities</h2>
+              <p class="step-description">Mortgages, credit cards, personal loans. Tracking these gives you an accurate net worth picture.</p>
+            </div>
+          </div>
+
+          <!-- Added liabilities -->
+          <div class="added-list" *ngIf="addedLiabilities.length > 0">
+            <p class="added-label">Added so far:</p>
+            <div class="account-chips">
+              <mat-chip *ngFor="let a of addedLiabilities" class="account-chip liability"
+                        [disabled]="deletingId === a.id">
+                <mat-icon matChipAvatar>receipt_long</mat-icon>
+                {{ a.name }}
+                <mat-icon matChipRemove (click)="removeAccount(a, addedLiabilities)">
+                  {{ deletingId === a.id ? 'hourglass_empty' : 'cancel' }}
+                </mat-icon>
+              </mat-chip>
+            </div>
+          </div>
+
+          <!-- Type chooser -->
+          <div class="type-grid" *ngIf="!selectedLiabilityType">
+            <mat-card *ngFor="let card of liabilityTypeCards" class="type-card" (click)="selectLiabilityType(card.type)" role="button">
+              <mat-card-content>
+                <mat-icon class="type-icon">{{ card.icon }}</mat-icon>
+                <p>{{ card.label }}</p>
+              </mat-card-content>
+            </mat-card>
+          </div>
+
+          <!-- Liability form -->
+          <mat-card class="add-card" appearance="outlined" *ngIf="selectedLiabilityType">
+            <mat-card-content>
+              <p class="add-card-title">{{ getCardLabel(liabilityTypeCards, selectedLiabilityType) }}</p>
+              <form [formGroup]="liabilityForm" class="step-form">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Name *</mat-label>
+                  <input matInput formControlName="name" placeholder="e.g. ANZ Home Loan" />
+                </mat-form-field>
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>Lender / Institution</mat-label>
+                    <input matInput formControlName="institution"
+                           [matAutocomplete]="liabilityInstAc" />
+                    <mat-autocomplete #liabilityInstAc="matAutocomplete">
+                      <mat-option *ngFor="let s of filteredLiabilityInstitutions" [value]="s">{{ s }}</mat-option>
+                    </mat-autocomplete>
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>Outstanding balance</mat-label>
+                    <mat-icon matPrefix>attach_money</mat-icon>
+                    <input matInput type="number" formControlName="startingBalance" step="0.01" />
+                  </mat-form-field>
+                </div>
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>Balance as of</mat-label>
+                    <input matInput [matDatepicker]="liabilityDatePicker" formControlName="startingBalanceDate" />
+                    <mat-datepicker-toggle matIconSuffix [for]="liabilityDatePicker"></mat-datepicker-toggle>
+                    <mat-datepicker #liabilityDatePicker></mat-datepicker>
+                    <mat-hint>Defaults to today</mat-hint>
+                  </mat-form-field>
+                </div>
+              </form>
+              <div class="form-actions">
+                <button mat-flat-button color="primary" (click)="addLiability()" [disabled]="liabilityForm.invalid || loading">
+                  <mat-icon>add</mat-icon> {{ loading ? 'Adding...' : 'Add Liability' }}
+                </button>
+                <button mat-button (click)="selectedLiabilityType = null">Cancel</button>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <div class="step-actions">
+            <button mat-flat-button color="primary" matStepperNext>
+              <mat-icon>arrow_forward</mat-icon>
+              Next: Set Up Investing
+            </button>
+            <button mat-button (click)="stepper.previous()">Back</button>
+          </div>
+        </div>
+      </mat-step>
+
+      <!-- ─── Step 5: Investing ──────────────────────────────────────────────── -->
+      <mat-step label="Investing">
+        <div class="step-content">
+          <div class="step-header">
+            <mat-icon class="step-icon">show_chart</mat-icon>
+            <div>
+              <h2>Set up investing</h2>
+              <p class="step-description">Create accounts for your investments — stocks, metals, crypto. You can track positions and prices in Ctrl Value.</p>
+            </div>
+          </div>
+
+          <!-- Added investments -->
+          <div class="added-list" *ngIf="addedInvestments.length > 0">
+            <p class="added-label">Added so far:</p>
+            <div class="account-chips">
+              <mat-chip *ngFor="let a of addedInvestments" class="account-chip invest"
+                        [disabled]="deletingId === a.id">
+                <mat-icon matChipAvatar>{{ getAssetClassIcon(a.assetClass) }}</mat-icon>
+                {{ a.name }}
+                <mat-icon matChipRemove (click)="removeAccount(a, addedInvestments)">
+                  {{ deletingId === a.id ? 'hourglass_empty' : 'cancel' }}
+                </mat-icon>
+              </mat-chip>
+            </div>
+          </div>
+
+          <!-- Type chooser -->
+          <div class="type-grid" *ngIf="!selectedInvestmentType">
+            <mat-card *ngFor="let card of investmentTypeCards" class="type-card" (click)="selectInvestmentType(card.type)" role="button">
+              <mat-card-content>
+                <mat-icon class="type-icon">{{ card.icon }}</mat-icon>
+                <p>{{ card.label }}</p>
+              </mat-card-content>
+            </mat-card>
+          </div>
+
+          <!-- Investment form -->
+          <mat-card class="add-card" appearance="outlined" *ngIf="selectedInvestmentType">
+            <mat-card-content>
+              <p class="add-card-title">{{ getCardLabel(investmentTypeCards, selectedInvestmentType) }}</p>
+              <form [formGroup]="investmentForm" class="step-form">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Account name *</mat-label>
+                  <input matInput formControlName="name" placeholder="e.g. CommSec Portfolio, BullionVault" />
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Broker / Platform</mat-label>
+                  <input matInput formControlName="institution" placeholder="e.g. CommSec, eToro"
+                         [matAutocomplete]="investInstAc" />
+                  <mat-autocomplete #investInstAc="matAutocomplete">
+                    <mat-option *ngFor="let s of filteredInvestInstitutions" [value]="s">{{ s }}</mat-option>
+                  </mat-autocomplete>
+                </mat-form-field>
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>Current value (approx)</mat-label>
+                    <mat-icon matPrefix>attach_money</mat-icon>
+                    <input matInput type="number" formControlName="startingBalance" step="0.01" placeholder="0.00" />
+                    <mat-hint>Enter 0 if unknown</mat-hint>
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>Value as of</mat-label>
+                    <input matInput [matDatepicker]="investDatePicker" formControlName="startingBalanceDate" />
+                    <mat-datepicker-toggle matIconSuffix [for]="investDatePicker"></mat-datepicker-toggle>
+                    <mat-datepicker #investDatePicker></mat-datepicker>
+                    <mat-hint>Defaults to today</mat-hint>
+                  </mat-form-field>
+                </div>
+              </form>
+              <div class="form-actions">
+                <button mat-flat-button color="primary" (click)="addInvestmentAccount()" [disabled]="investmentForm.invalid || loading">
+                  <mat-icon>add</mat-icon> {{ loading ? 'Adding...' : 'Add Account' }}
+                </button>
+                <button mat-button (click)="selectedInvestmentType = null">Cancel</button>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <div class="step-actions">
+            <button mat-flat-button color="primary" matStepperNext>
+              <mat-icon>done</mat-icon>
+              Finish Setup
+            </button>
+            <button mat-button (click)="stepper.previous()">Back</button>
+            <button mat-button color="accent" (click)="skipToEnd()">Skip &amp; Go to Dashboard</button>
+          </div>
+        </div>
+      </mat-step>
+
+      <!-- ─── Step 6: Complete ───────────────────────────────────────────────── -->
+      <mat-step label="Done!">
+        <div class="step-content complete-step">
+          <div class="complete-icon-wrap">
+            <mat-icon class="complete-icon">check_circle</mat-icon>
+          </div>
+          <h2>You're all set!</h2>
+          <p class="step-description">
+            Here's what you added during setup:
+          </p>
+
+          <div class="summary-grid">
+            <div class="summary-item" *ngIf="addedBankAccounts.length > 0">
+              <mat-icon>account_balance</mat-icon>
+              <strong>{{ addedBankAccounts.length }}</strong>
+              <span>Bank Account{{ addedBankAccounts.length !== 1 ? 's' : '' }}</span>
+            </div>
+            <div class="summary-item" *ngIf="addedAssets.length > 0">
+              <mat-icon>home_work</mat-icon>
+              <strong>{{ addedAssets.length }}</strong>
+              <span>Asset{{ addedAssets.length !== 1 ? 's' : '' }}</span>
+            </div>
+            <div class="summary-item" *ngIf="addedLiabilities.length > 0">
+              <mat-icon>receipt_long</mat-icon>
+              <strong>{{ addedLiabilities.length }}</strong>
+              <span>Liabilit{{ addedLiabilities.length !== 1 ? 'ies' : 'y' }}</span>
+            </div>
+            <div class="summary-item" *ngIf="addedInvestments.length > 0">
+              <mat-icon>show_chart</mat-icon>
+              <strong>{{ addedInvestments.length }}</strong>
+              <span>Investment Account{{ addedInvestments.length !== 1 ? 's' : '' }}</span>
+            </div>
+          </div>
+
+          <p class="next-steps" *ngIf="totalAdded === 0">
+            No worries — you can add accounts, assets and investments any time from the main menu.
+          </p>
+          <p class="next-steps" *ngIf="totalAdded > 0">
+            Head to your Dashboard to see your net worth, or go to Accounts to import transactions via OFX/QIF.
+          </p>
+
+          <div class="step-actions center">
+            <button mat-flat-button color="primary" (click)="finish()" [disabled]="loading" class="go-btn">
+              <mat-icon>dashboard</mat-icon>
+              {{ loading ? 'Loading...' : 'Go to Dashboard' }}
+            </button>
+          </div>
+        </div>
+      </mat-step>
+
+    </mat-stepper>
+  </div>
+</div>

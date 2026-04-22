@@ -1,0 +1,92 @@
+<div class="page-container">
+    <div class="page-header">
+        <h1><mat-icon>account_balance_wallet</mat-icon> Budgets</h1>
+        <button mat-raised-button color="primary" (click)="createBudget()">
+            <mat-icon>add</mat-icon>
+            New Budget
+        </button>
+    </div>
+
+    <div class="table-container">
+        <table mat-table [dataSource]="dataSource" class="w-100">
+
+            <!-- Category Column -->
+            <ng-container matColumnDef="category">
+                <th mat-header-cell *matHeaderCellDef> Category </th>
+                <td mat-cell *matCellDef="let row">
+                    <strong>{{row.categoryName}}</strong>
+                </td>
+            </ng-container>
+
+            <!-- Period Type -->
+            <ng-container matColumnDef="periodType">
+                <th mat-header-cell *matHeaderCellDef> Type </th>
+                <td mat-cell *matCellDef="let row">
+                    <mat-chip-set>
+                        <mat-chip>{{row.periodType}}</mat-chip>
+                    </mat-chip-set>
+                </td>
+            </ng-container>
+
+            <!-- Period -->
+            <ng-container matColumnDef="period">
+                <th mat-header-cell *matHeaderCellDef> Period </th>
+                <td mat-cell *matCellDef="let row" class="text-muted">
+                    {{row.periodStart | date:'mediumDate'}} - {{row.periodEnd | date:'mediumDate'}}
+                </td>
+            </ng-container>
+
+            <!-- Progress Column -->
+            <ng-container matColumnDef="progress">
+                <th mat-header-cell *matHeaderCellDef> Utilization </th>
+                <td mat-cell *matCellDef="let row" class="progress-cell">
+                    <div class="progress-wrapper">
+                        <mat-progress-bar mode="determinate" [value]="row.percentUsed || 0"
+                            [color]="getProgressBarColor(row.percentUsed || 0)"></mat-progress-bar>
+                        <span class="progress-text">{{row.percentUsed || 0 | number:'1.0-0'}}%</span>
+                    </div>
+                </td>
+            </ng-container>
+
+            <!-- Amount Column -->
+            <ng-container matColumnDef="amount">
+                <th mat-header-cell *matHeaderCellDef> Budget </th>
+                <td mat-cell *matCellDef="let row" class="fw-semibold"> {{row.amount | currency:row.currency}} </td>
+            </ng-container>
+
+            <!-- Spent Column -->
+            <ng-container matColumnDef="spent">
+                <th mat-header-cell *matHeaderCellDef> Spent </th>
+                <td mat-cell *matCellDef="let row"> {{row.actualSpent | currency:row.currency}} </td>
+            </ng-container>
+
+            <!-- Remaining Column -->
+            <ng-container matColumnDef="remaining">
+                <th mat-header-cell *matHeaderCellDef> Remaining </th>
+                <td mat-cell *matCellDef="let row" [class.over-budget]="(row.remaining || 0) < 0">
+                    {{row.remaining | currency:row.currency}}
+                </td>
+            </ng-container>
+
+            <!-- Actions -->
+            <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef> Actions </th>
+                <td mat-cell *matCellDef="let row" class="actions-cell">
+                    <button mat-icon-button color="primary" (click)="editBudget(row.id)" matTooltip="Edit budget">
+                        <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="deleteBudget(row.id)" matTooltip="Delete budget">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+            <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell empty-state" colspan="8">No active budgets found</td>
+            </tr>
+        </table>
+    </div>
+</div>

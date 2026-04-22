@@ -1,0 +1,488 @@
+<div class="agent-page">
+
+  <!-- Loading state -->
+  <div *ngIf="loadingConfig" class="agent-loading">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Loading CtrlValue Agent...</p>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="configError" class="agent-error">
+    <mat-icon>error_outline</mat-icon>
+    <p>{{ configError }}</p>
+  </div>
+
+  <!-- Not enabled state -->
+  <div *ngIf="!loadingConfig && config && !config.agentEnabled" class="agent-disabled">
+    <mat-icon class="disabled-icon">smart_toy</mat-icon>
+    <h2>CtrlValue Agent</h2>
+    <p>The AI agent is not currently enabled for your account.</p>
+    <p class="muted">Contact your administrator to enable access.</p>
+  </div>
+
+  <!-- Main agent UI -->
+  <div *ngIf="!loadingConfig && config && config.agentEnabled" class="agent-content">
+
+    <div class="agent-header">
+      <div class="agent-title">
+        <mat-icon class="agent-icon">smart_toy</mat-icon>
+        <div>
+          <h1>CtrlValue Agent</h1>
+          <span class="provider-badge">{{ config.activeProvider }}</span>
+        </div>
+      </div>
+    </div>
+
+    <mat-tab-group animationDuration="200ms" class="agent-tabs">
+
+      <!-- ── Overview Tab ── -->
+      <mat-tab label="Overview">
+        <div class="tab-loading" *ngIf="loadingContext && !context">
+          <mat-spinner diameter="32"></mat-spinner>
+          <p>Building your financial context...</p>
+        </div>
+
+        <div class="tab-content" *ngIf="context">
+          <div class="overview-grid">
+
+            <!-- Net Worth Card -->
+            <mat-card class="overview-card highlight-card">
+              <mat-card-header>
+                <mat-icon mat-card-avatar>account_balance_wallet</mat-icon>
+                <mat-card-title>Net Worth</mat-card-title>
+                <mat-card-subtitle>As of {{ formatDate(context.asOf) }}</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="big-number">{{ formatCurrency(context.netWorth.total, context.currency) }}</div>
+                <div class="sub-numbers">
+                  <span class="positive">Assets: {{ formatCurrency(context.netWorth.totalAssets, context.currency) }}</span>
+                  <span class="negative">Liabilities: {{ formatCurrency(context.netWorth.totalLiabilities, context.currency) }}</span>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Savings Rate Card -->
+            <mat-card class="overview-card">
+              <mat-card-header>
+                <mat-icon mat-card-avatar>savings</mat-icon>
+                <mat-card-title>Savings Rate</mat-card-title>
+                <mat-card-subtitle>Last {{ context.saving.monthsAnalysed }} months avg</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="big-number" [class.negative-value]="context.saving.savingsRatePercent < 0">
+                  {{ formatPercent(context.saving.savingsRatePercent) }}
+                </div>
+                <p class="card-label">{{ context.saving.consistency }}</p>
+                <div class="sub-numbers">
+                  <span>Income: {{ formatCurrency(context.saving.averageMonthlyIncome, context.currency) }}/mo</span>
+                  <span>Expenses: {{ formatCurrency(context.saving.averageMonthlyExpenses, context.currency) }}/mo</span>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Cash Position Card -->
+            <mat-card class="overview-card">
+              <mat-card-header>
+                <mat-icon mat-card-avatar>payments</mat-icon>
+                <mat-card-title>Cash Position</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="big-number">{{ formatCurrency(context.cash.totalCashBalance, context.currency) }}</div>
+                <div class="sub-numbers">
+                  <span>Idle est: {{ formatCurrency(context.cash.estimatedIdleCash, context.currency) }}</span>
+                  <span>Buffer: {{ formatCurrency(context.cash.emergencyFundEstimate, context.currency) }}</span>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Spending Card -->
+            <mat-card class="overview-card">
+              <mat-card-header>
+                <mat-icon mat-card-avatar>receipt_long</mat-icon>
+                <mat-card-title>Monthly Spending</mat-card-title>
+                <mat-card-subtitle>Trend: {{ context.spending.trendDirection }}</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="big-number">{{ formatCurrency(context.spending.monthlyAverageTotal, context.currency) }}</div>
+                <div class="sub-numbers">
+                  <span>Essential: {{ formatCurrency(context.spending.essentialEstimate, context.currency) }}</span>
+                  <span>Discretionary: {{ formatCurrency(context.spending.discretionaryEstimate, context.currency) }}</span>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+          </div>
+
+          <!-- Asset Class Breakdown -->
+          <mat-card class="breakdown-card" *ngIf="context.netWorth.byAssetClass">
+            <mat-card-header>
+              <mat-card-title>Asset Class Breakdown</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="asset-class-grid">
+                <div class="asset-class-item" *ngFor="let key of objectKeys(context.netWorth.byAssetClass)">
+                  <span class="asset-class-name">{{ key }}</span>
+                  <span class="asset-class-value">{{ formatCurrency(context.netWorth.byAssetClass[key], context.currency) }}</span>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- Savings Rate History Chart -->
+          <mat-card class="breakdown-card savings-chart-card" *ngIf="savingsHistory.length > 0">
+            <mat-card-header>
+              <mat-icon mat-card-avatar>trending_up</mat-icon>
+              <mat-card-title>Savings Rate History</mat-card-title>
+              <mat-card-subtitle>{{ savingsHistory.length }} months tracked</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="chart-container">
+                <canvas baseChart
+                        [data]="savingsChartData"
+                        [options]="savingsChartOptions"
+                        type="line">
+                </canvas>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <div class="tab-loading savings-history-loading" *ngIf="loadingSavingsHistory">
+            <mat-spinner diameter="24"></mat-spinner>
+          </div>
+
+          <button mat-stroked-button (click)="loadContext(true)" class="refresh-btn" [disabled]="loadingContext">
+            <mat-icon>refresh</mat-icon> Refresh Context
+          </button>
+        </div>
+
+      </mat-tab>
+
+      <!-- ── Insights Tab ── -->
+      <mat-tab label="Insights">
+        <div class="tab-content">
+          <div class="insights-header">
+            <h2>Financial Insights</h2>
+            <button mat-stroked-button (click)="refreshInsights()" [disabled]="refreshingInsights">
+              <mat-spinner *ngIf="refreshingInsights" diameter="16"></mat-spinner>
+              <mat-icon *ngIf="!refreshingInsights">refresh</mat-icon>
+              Refresh
+            </button>
+          </div>
+
+          <div *ngIf="!loadingInsights && insights.length === 0" class="empty-state">
+            <mat-icon>check_circle_outline</mat-icon>
+            <p>No active insights. Your finances look good, or run a refresh to check.</p>
+          </div>
+
+          <div class="insights-list" *ngIf="!loadingInsights && insights.length > 0">
+            <mat-card class="insight-card" *ngFor="let insight of insights"
+                      [class]="insightSeverityClass(insight.severity)">
+              <mat-card-header>
+                <mat-icon mat-card-avatar [class]="insightSeverityClass(insight.severity)">
+                  {{ insight.severity === 'Alert' ? 'error' : insight.severity === 'Warning' ? 'warning' : 'info' }}
+                </mat-icon>
+                <mat-card-title>{{ insight.title }}</mat-card-title>
+                <mat-card-subtitle>
+                  <mat-chip class="source-chip source-internal">Internal</mat-chip>
+                </mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <p>{{ insight.summary }}</p>
+              </mat-card-content>
+              <mat-card-actions>
+                <button mat-button (click)="dismissInsight(insight)">Dismiss</button>
+              </mat-card-actions>
+            </mat-card>
+          </div>
+
+          <div class="tab-loading" *ngIf="loadingInsights">
+            <mat-spinner diameter="32"></mat-spinner>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- ── Chat Tab ── -->
+      <mat-tab label="Chat">
+        <div class="chat-layout">
+
+          <!-- Conversation sidebar -->
+          <div class="conversation-list">
+            <button mat-stroked-button class="new-chat-btn" (click)="newConversation()">
+              <mat-icon>add</mat-icon> New Chat
+            </button>
+            <mat-divider></mat-divider>
+            <div class="conv-item"
+                 *ngFor="let conv of conversations"
+                 [class.active]="conv.id === activeConversationId"
+                 (click)="selectConversation(conv)">
+              <mat-icon class="conv-icon">chat_bubble_outline</mat-icon>
+              <div class="conv-meta">
+                <span class="conv-title">{{ conv.title }}</span>
+                <span class="conv-date">{{ formatDate(conv.createdAt) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chat area -->
+          <div class="chat-area">
+            <div class="messages-container" *ngIf="messages.length > 0">
+              <div class="message"
+                   *ngFor="let msg of messages"
+                   [class.user-message]="msg.role === 'user'"
+                   [class.assistant-message]="msg.role === 'assistant'">
+                <div class="message-content">{{ msg.content }}</div>
+                <div class="message-meta" *ngIf="msg.role === 'assistant'">
+                  <mat-chip class="source-chip" [class]="sourceClass(msg.sourceType)">
+                    {{ sourceLabel(msg.sourceType) }}
+                  </mat-chip>
+                  <span class="provider-label" *ngIf="config">{{ config.activeProvider }}</span>
+                </div>
+              </div>
+              <div class="typing-indicator" *ngIf="chatLoading">
+                <mat-spinner diameter="20"></mat-spinner>
+                <span>Thinking...</span>
+              </div>
+            </div>
+
+            <div class="chat-empty" *ngIf="messages.length === 0 && !chatLoading">
+              <mat-icon>auto_awesome</mat-icon>
+              <h3>Ask CtrlValue anything about your finances</h3>
+              <p class="muted">e.g. "How is my savings rate trending?" or "What's my biggest expense category?"</p>
+              <p class="disclaimer muted">Educational commentary only — not regulated financial advice.</p>
+            </div>
+
+            <div class="chat-error" *ngIf="chatError">
+              <mat-icon>error_outline</mat-icon> {{ chatError }}
+            </div>
+
+            <div class="chat-input-area">
+              <mat-form-field class="chat-input-field" appearance="outline">
+                <textarea matInput
+                          [(ngModel)]="chatInput"
+                          (keydown)="onChatKeydown($event)"
+                          placeholder="Ask about your finances..."
+                          rows="2"
+                          maxlength="4000"
+                          [disabled]="chatLoading"></textarea>
+              </mat-form-field>
+              <button mat-fab color="primary"
+                      (click)="sendMessage()"
+                      [disabled]="!chatInput.trim() || chatLoading"
+                      matTooltip="Send (Enter)">
+                <mat-icon>send</mat-icon>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </mat-tab>
+
+      <!-- ── Scenarios Tab ── -->
+      <mat-tab label="Scenarios">
+        <div class="tab-content">
+          <div class="scenario-header">
+            <h2>What-If Scenarios</h2>
+            <p class="muted">Model the impact of financial decisions before making them. Results are estimates only — not financial advice.</p>
+          </div>
+
+          <mat-card class="scenario-form-card">
+            <mat-card-content>
+
+              <!-- Scenario type selector -->
+              <div class="scenario-type-row">
+                <label class="scenario-label">Scenario type</label>
+                <div class="scenario-type-buttons">
+                  <button mat-stroked-button
+                          [class.active-scenario]="scenarioType === 'CutCategory'"
+                          (click)="scenarioType = 'CutCategory'; scenarioResult = null">
+                    Cut Spending
+                  </button>
+                  <button mat-stroked-button
+                          [class.active-scenario]="scenarioType === 'PayOffLoan'"
+                          (click)="scenarioType = 'PayOffLoan'; scenarioResult = null">
+                    Pay Off Loan
+                  </button>
+                  <button mat-stroked-button
+                          [class.active-scenario]="scenarioType === 'IncreaseSavingsRate'"
+                          (click)="scenarioType = 'IncreaseSavingsRate'; scenarioResult = null">
+                    Save More
+                  </button>
+                  <button mat-stroked-button
+                          [class.active-scenario]="scenarioType === 'SellVehicle'"
+                          [disabled]="vehicleOptions.length === 0"
+                          (click)="scenarioType = 'SellVehicle'; scenarioResult = null">
+                    Sell Vehicle
+                  </button>
+                </div>
+              </div>
+
+              <!-- CutCategory inputs -->
+              <div class="scenario-inputs" *ngIf="scenarioType === 'CutCategory'">
+                <mat-form-field appearance="outline">
+                  <mat-label>Spending category</mat-label>
+                  <mat-select [(ngModel)]="scenarioCategoryName">
+                    <mat-option *ngFor="let cat of categoryOptions" [value]="cat">{{ cat }}</mat-option>
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Reduction %</mat-label>
+                  <input matInput type="number" [(ngModel)]="scenarioReductionPercent" min="1" max="100" />
+                </mat-form-field>
+              </div>
+
+              <!-- PayOffLoan inputs -->
+              <div class="scenario-inputs" *ngIf="scenarioType === 'PayOffLoan'">
+                <mat-form-field appearance="outline">
+                  <mat-label>Loan</mat-label>
+                  <mat-select [(ngModel)]="scenarioLoanName">
+                    <mat-option *ngFor="let loan of loanOptions" [value]="loan">{{ loan }}</mat-option>
+                  </mat-select>
+                </mat-form-field>
+                <p class="muted" *ngIf="loanOptions.length === 0">No loans with full details found. Add interest rate and repayment details in the Loan section.</p>
+              </div>
+
+              <!-- IncreaseSavingsRate inputs -->
+              <div class="scenario-inputs" *ngIf="scenarioType === 'IncreaseSavingsRate'">
+                <mat-form-field appearance="outline">
+                  <mat-label>Target savings rate (%)</mat-label>
+                  <input matInput type="number" [(ngModel)]="scenarioTargetSavingsRate" min="1" max="99" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Projection years</mat-label>
+                  <input matInput type="number" [(ngModel)]="scenarioProjectionYears" min="1" max="40" />
+                </mat-form-field>
+              </div>
+
+              <!-- SellVehicle inputs -->
+              <div class="scenario-inputs" *ngIf="scenarioType === 'SellVehicle'">
+                <mat-form-field appearance="outline">
+                  <mat-label>Vehicle</mat-label>
+                  <mat-select [(ngModel)]="scenarioVehicleName">
+                    <mat-option *ngFor="let v of vehicleOptions" [value]="v">{{ v }}</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+
+              <div class="scenario-run-row">
+                <button mat-flat-button color="primary"
+                        (click)="runScenario()"
+                        [disabled]="scenarioLoading">
+                  <mat-spinner *ngIf="scenarioLoading" diameter="16"></mat-spinner>
+                  <mat-icon *ngIf="!scenarioLoading">play_arrow</mat-icon>
+                  {{ scenarioLoading ? 'Calculating...' : 'Run Scenario' }}
+                </button>
+              </div>
+
+            </mat-card-content>
+          </mat-card>
+
+          <!-- Error -->
+          <div class="scenario-error" *ngIf="scenarioError">
+            <mat-icon>error_outline</mat-icon> {{ scenarioError }}
+          </div>
+
+          <!-- Results -->
+          <mat-card class="scenario-result-card" *ngIf="scenarioResult">
+            <mat-card-header>
+              <mat-icon mat-card-avatar>insights</mat-icon>
+              <mat-card-title>{{ scenarioResult.title }}</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <p class="scenario-summary">{{ scenarioResult.summary }}</p>
+
+              <div class="scenario-metrics">
+                <div class="scenario-metric"
+                     *ngFor="let metric of scenarioResult.metrics"
+                     [class.metric-highlight]="metric.isHighlight">
+                  <span class="metric-label">{{ metric.label }}</span>
+                  <span class="metric-value">
+                    {{ metric.value }}
+                    <span class="metric-unit" *ngIf="metric.unit">{{ metric.unit }}</span>
+                  </span>
+                </div>
+              </div>
+
+              <p class="scenario-disclaimer muted" *ngIf="scenarioResult.disclaimer">
+                <mat-icon class="disclaimer-icon">info_outline</mat-icon>
+                {{ scenarioResult.disclaimer }}
+              </p>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- Scenario History -->
+          <div class="scenario-history" *ngIf="scenarioHistory.length > 0 || loadingScenarioHistory">
+            <h3 class="history-heading">Past Scenarios</h3>
+            <div class="tab-loading" *ngIf="loadingScenarioHistory" style="min-height:unset; height:32px; flex-direction:row; gap:8px; justify-content:flex-start;">
+              <mat-spinner diameter="20"></mat-spinner>
+            </div>
+            <div class="history-list" *ngIf="!loadingScenarioHistory">
+              <mat-card class="history-card" *ngFor="let item of scenarioHistory"
+                        (click)="scenarioResult = item.result">
+                <mat-card-content class="history-card-content">
+                  <div class="history-main">
+                    <span class="history-title">{{ item.title }}</span>
+                    <span class="history-date">{{ formatDate(item.createdAt) }}</span>
+                  </div>
+                  <mat-chip class="history-type-chip">{{ item.scenarioType }}</mat-chip>
+                </mat-card-content>
+              </mat-card>
+            </div>
+          </div>
+
+        </div>
+      </mat-tab>
+
+      <!-- ── Macro Tab ── -->
+      <mat-tab label="What's Affecting Me">
+        <div class="tab-content">
+          <div class="macro-header">
+            <h2>Macro Economic Context</h2>
+            <p class="muted">Educational commentary about current economic conditions. Not personal financial advice.</p>
+          </div>
+
+          <div class="tab-loading" *ngIf="loadingMacro">
+            <mat-spinner diameter="32"></mat-spinner>
+            <p>Fetching macro summaries...</p>
+          </div>
+
+          <div class="error-banner" *ngIf="!loadingMacro && macroError">
+            <mat-icon>error_outline</mat-icon>
+            <span>{{ macroError }}</span>
+          </div>
+
+          <div class="macro-grid" *ngIf="!loadingMacro && !macroError">
+            <mat-card class="macro-card" *ngFor="let macro of macroSummaries">
+              <mat-card-header>
+                <mat-icon mat-card-avatar>public</mat-icon>
+                <mat-card-title>{{ macro.topicDisplayName }}</mat-card-title>
+                <mat-card-subtitle>
+                  <mat-chip class="source-chip source-web" *ngIf="macro.sources">Web</mat-chip>
+                  <mat-chip class="source-chip source-internal" *ngIf="!macro.sources">Internal</mat-chip>
+                  <span class="cache-label" *ngIf="macro.isCached">Cached</span>
+                </mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <p class="macro-summary" *ngIf="isMacroExpanded(macro.topicKey)" [innerHTML]="renderSummary(macro.summary)"></p>
+                <p class="macro-summary" *ngIf="!isMacroExpanded(macro.topicKey)">{{ truncateSummary(macro.summary) }}</p>
+                <button class="macro-toggle" *ngIf="macro.summary.length > macroPreviewLength" (click)="toggleMacro(macro.topicKey)">
+                  <mat-icon>{{ isMacroExpanded(macro.topicKey) ? 'expand_less' : 'expand_more' }}</mat-icon>
+                  {{ isMacroExpanded(macro.topicKey) ? 'Show less' : 'Show more...' }}
+                </button>
+              </mat-card-content>
+              <mat-card-footer class="macro-footer">
+                <span class="macro-updated muted">Valid until {{ formatDate(macro.validUntil) }}</span>
+              </mat-card-footer>
+            </mat-card>
+          </div>
+
+          <div *ngIf="!loadingMacro && !macroError && macroSummaries.length === 0" class="empty-state">
+            <mat-icon>cloud_off</mat-icon>
+            <p>No macro summaries available. Make sure your API key is configured in Settings → Integrations.</p>
+          </div>
+        </div>
+      </mat-tab>
+
+    </mat-tab-group>
+
+  </div>
+</div>

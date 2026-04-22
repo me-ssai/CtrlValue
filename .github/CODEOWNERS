@@ -1,0 +1,11 @@
+# Global default — all files require review from the maintainer
+*                                   @me-ssai
+
+# Auth and security-sensitive backend paths
+/backend/src/CtrlValue.Api/         @me-ssai
+
+# Database migrations and seed scripts
+/database/                          @me-ssai
+
+# CI/CD workflows — changes here affect the entire pipeline
+/.github/workflows/                 @me-ssai

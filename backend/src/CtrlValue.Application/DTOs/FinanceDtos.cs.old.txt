@@ -1,0 +1,111 @@
+using ProjectZ.Domain.Enums;
+
+namespace ProjectZ.Application.DTOs;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Asset DTOs
+// ═══════════════════════════════════════════════════════════════════════════
+
+public class AssetDto
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Category { get; set; } = string.Empty;
+    public decimal CurrentValue { get; set; }
+    public string Currency { get; set; } = "AUD";
+    public string? Description { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+}
+
+public class CreateAssetRequest
+{
+    public string Name { get; set; } = string.Empty;
+    public AssetClass Category { get; set; }
+    public decimal CurrentValue { get; set; }
+    public string Currency { get; set; } = "AUD";
+    public string? Description { get; set; }
+}
+
+public class UpdateAssetRequest
+{
+    public string Name { get; set; } = string.Empty;
+    public AssetClass Category { get; set; }
+    public decimal CurrentValue { get; set; }
+    public string Currency { get; set; } = "AUD";
+    public string? Description { get; set; }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Liability DTOs
+// ═══════════════════════════════════════════════════════════════════════════
+
+public class LiabilityDto
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Category { get; set; } = string.Empty;
+    public decimal OutstandingAmount { get; set; }
+    public decimal? InterestRate { get; set; }
+    public string Currency { get; set; } = "AUD";
+    public string? Description { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+}
+
+public class CreateLiabilityRequest
+{
+    public string Name { get; set; } = string.Empty;
+    public string Category { get; set; } = string.Empty;
+    public decimal OutstandingAmount { get; set; }
+    public decimal? InterestRate { get; set; }
+    public string Currency { get; set; } = "AUD";
+    public string? Description { get; set; }
+}
+
+public class UpdateLiabilityRequest
+{
+    public string Name { get; set; } = string.Empty;
+    public string Category { get; set; } = string.Empty;
+    public decimal OutstandingAmount { get; set; }
+    public decimal? InterestRate { get; set; }
+    public string Currency { get; set; } = "AUD";
+    public string? Description { get; set; }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Transaction DTOs
+// ═══════════════════════════════════════════════════════════════════════════
+
+public class TransactionDto
+{
+    public Guid Id { get; set; }
+    public string Type { get; set; } = string.Empty;
+    public decimal Amount { get; set; }
+    public string Category { get; set; } = string.Empty;
+    public DateTime Date { get; set; }
+    public string? Description { get; set; }
+    public string Currency { get; set; } = "AUD";
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+}
+
+public class CreateTransactionRequest
+{
+    public TransactionType Type { get; set; }
+    public decimal Amount { get; set; }
+    public string Category { get; set; } = string.Empty;
+    public DateTime Date { get; set; }
+    public string? Description { get; set; }
+    public string Currency { get; set; } = "AUD";
+}
+
+public class UpdateTransactionRequest
+{
+    public TransactionType Type { get; set; }
+    public decimal Amount { get; set; }
+    public string Category { get; set; } = string.Empty;
+    public DateTime Date { get; set; }
+    public string? Description { get; set; }
+    public string Currency { get; set; } = "AUD";
+}

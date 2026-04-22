@@ -1,0 +1,155 @@
+<h2 mat-dialog-title>
+    <mat-icon>show_chart</mat-icon>
+    {{ isEditMode ? 'Edit Instrument' : 'New Instrument' }}
+</h2>
+
+<mat-dialog-content>
+    <form [formGroup]="instrumentForm" (ngSubmit)="onSubmit()" class="dialog-form">
+        <!-- Create mode: Market + Symbol on one row, Name below -->
+        <ng-container *ngIf="!isEditMode">
+            <div class="row g-3">
+                <div class="col-4">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Market</mat-label>
+                        <mat-select [value]="selectedMarket"
+                            (selectionChange)="selectedMarket = $event.value; onMarketChange()">
+                            <mat-option *ngFor="let m of markets" [value]="m">{{ m.label }}</mat-option>
+                        </mat-select>
+                        <mat-icon matPrefix>public</mat-icon>
+                        <mat-hint>Exchange / region</mat-hint>
+                    </mat-form-field>
+                </div>
+                <div class="col-8">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Symbol</mat-label>
+                        <input matInput formControlName="symbol"
+                            placeholder="Search e.g. AAPL, GOLD..."
+                            [matAutocomplete]="symbolAuto"
+                            (input)="onSymbolInput($event)">
+                        <mat-icon matPrefix>fingerprint</mat-icon>
+                        <mat-spinner matSuffix diameter="16" *ngIf="searching"></mat-spinner>
+                        <mat-autocomplete #symbolAuto [displayWith]="displaySymbol"
+                            (optionSelected)="onSearchResultSelected($event)">
+                            <mat-option *ngFor="let r of searchResults" [value]="r" class="search-option">
+                                <span class="search-symbol">{{ r.symbol }}</span>
+                                <span class="search-name">{{ r.name }}</span>
+                                <span class="search-meta" *ngIf="r.exchange">{{ r.exchange }}</span>
+                                <span class="search-tracked" *ngIf="r.isAlreadyTracked">✓ tracked</span>
+                            </mat-option>
+                        </mat-autocomplete>
+                        <mat-error *ngIf="instrumentForm.get('symbol')?.hasError('required')">Symbol is required</mat-error>
+                        <mat-hint>Search or type a ticker symbol</mat-hint>
+                    </mat-form-field>
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-12">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Name</mat-label>
+                        <input matInput formControlName="name" placeholder="Ex. Apple Inc.">
+                        <mat-icon matPrefix>label</mat-icon>
+                        <mat-error *ngIf="instrumentForm.get('name')?.hasError('required')">Name is required</mat-error>
+                    </mat-form-field>
+                </div>
+            </div>
+        </ng-container>
+
+        <!-- Edit mode: Symbol + Name side by side (original layout) -->
+        <div class="row g-3" *ngIf="isEditMode">
+            <div class="col-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Symbol</mat-label>
+                    <input matInput formControlName="symbol"
+                        style="text-transform: uppercase"
+                        [matAutocomplete]="symbolAuto"
+                        (input)="onSymbolInput($event)">
+                    <mat-icon matPrefix>fingerprint</mat-icon>
+                    <mat-autocomplete #symbolAuto [displayWith]="displaySymbol"
+                        (optionSelected)="onSearchResultSelected($event)">
+                    </mat-autocomplete>
+                    <mat-error *ngIf="instrumentForm.get('symbol')?.hasError('required')">Symbol is required</mat-error>
+                    <mat-hint>Unique ticker symbol</mat-hint>
+                </mat-form-field>
+            </div>
+            <div class="col-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Name</mat-label>
+                    <input matInput formControlName="name" placeholder="Ex. Apple Inc.">
+                    <mat-icon matPrefix>label</mat-icon>
+                    <mat-error *ngIf="instrumentForm.get('name')?.hasError('required')">Name is required</mat-error>
+                </mat-form-field>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Type</mat-label>
+                    <mat-select formControlName="instrumentType">
+                        <mat-option *ngFor="let type of instrumentTypes" [value]="type">{{ type }}</mat-option>
+                    </mat-select>
+                    <mat-icon matPrefix>category</mat-icon>
+                    <mat-error *ngIf="instrumentForm.get('instrumentType')?.hasError('required')">Type is
+                        required</mat-error>
+                </mat-form-field>
+            </div>
+            <div class="col-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Currency</mat-label>
+                    <mat-select formControlName="currency">
+                        <mat-option *ngFor="let curr of currencies" [value]="curr">{{ curr }}</mat-option>
+                    </mat-select>
+                    <mat-icon matPrefix>attach_money</mat-icon>
+                    <mat-error *ngIf="instrumentForm.get('currency')?.hasError('required')">Currency is
+                        required</mat-error>
+                </mat-form-field>
+            </div>
+        </div>
+
+        <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Exchange</mat-label>
+            <input matInput formControlName="exchange" placeholder="Ex. NASDAQ">
+            <mat-icon matPrefix>business</mat-icon>
+            <mat-hint>Optional</mat-hint>
+        </mat-form-field>
+
+        <div class="row g-3">
+            <div class="col-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>External Symbol</mat-label>
+                    <input matInput formControlName="externalSymbol" placeholder="Ex. XAU for gold">
+                    <mat-icon matPrefix>tag</mat-icon>
+                    <mat-hint>Symbol used by price provider</mat-hint>
+                </mat-form-field>
+            </div>
+            <div class="col-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Price Provider</mat-label>
+                    <mat-select formControlName="priceProvider">
+                        <mat-option value="">None</mat-option>
+                        <mat-option *ngFor="let p of priceProviders" [value]="p.value">{{ p.label }}</mat-option>
+                    </mat-select>
+                    <mat-icon matPrefix>cloud_download</mat-icon>
+                </mat-form-field>
+            </div>
+        </div>
+
+        <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Price Unit</mat-label>
+            <mat-select formControlName="priceUnit">
+                <mat-option *ngFor="let u of metalUnits" [value]="u">{{ u }}</mat-option>
+            </mat-select>
+            <mat-icon matPrefix>straighten</mat-icon>
+            <mat-hint>Unit in which the price provider quotes prices (e.g. TROY_OZ for metals)</mat-hint>
+        </mat-form-field>
+    </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button (click)="cancel()" [disabled]="loading">Cancel</button>
+    <button mat-raised-button color="primary" [disabled]="instrumentForm.invalid || loading" (click)="onSubmit()">
+        <mat-icon *ngIf="loading">refresh</mat-icon>
+        <mat-icon *ngIf="!loading">save</mat-icon>
+        {{ isEditMode ? 'Update Instrument' : 'Create Instrument' }}
+    </button>
+</mat-dialog-actions>

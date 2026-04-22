@@ -1,0 +1,91 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using ProjectZ.Application.DTOs;
+using ProjectZ.Domain.Enums;
+using ProjectZ.Infrastructure.Data;
+
+namespace ProjectZ.Api.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+[Authorize]
+public class DashboardController : ControllerBase
+{
+    private readonly AppDbContext _db;
+
+    public DashboardController(AppDbContext db)
+    {
+        _db = db;
+    }
+
+    /// <summary>
+    /// Get the financial dashboard summary for the authenticated user.
+    /// </summary>
+    [HttpGet("summary")]
+    [ProducesResponseType(typeof(DashboardSummary), 200)]
+    [ProducesResponseType(401)]
+    public async Task<IActionResult> GetSummary()
+    {
+        var userId = GetUserId();
+
+        var totalAssets = await _db.Assets
+            .Where(a => a.UserId == userId)
+            .SumAsync(a => a.CurrentValue);
+
+        var totalLiabilities = await _db.Liabilities
+            .Where(l => l.UserId == userId)
+            .SumAsync(l => l.OutstandingAmount);
+
+        var assetCount = await _db.Assets.CountAsync(a => a.UserId == userId);
+        var liabilityCount = await _db.Liabilities.CountAsync(l => l.UserId == userId);
+
+        var startOfMonth = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        var transactionsThisMonth = await _db.Transactions
+            .Where(t => t.UserId == userId && t.Date >= startOfMonth)
+            .ToListAsync();
+
+        var recentTransactions = await _db.Transactions
+            .Where(t => t.UserId == userId)
+            .OrderByDescending(t => t.Date)
+            .Take(10)
+            .Select(t => new RecentTransaction
+            {
+                Id = t.Id,
+                Type = t.Type.ToString(),
+                Amount = t.Amount,
+                Category = t.Category,
+                Date = t.Date,
+                Description = t.Description
+            })
+            .ToListAsync();
+
+        var summary = new DashboardSummary
+        {
+            TotalAssets = totalAssets,
+            TotalLiabilities = totalLiabilities,
+            NetWorth = totalAssets - totalLiabilities,
+            AssetCount = assetCount,
+            LiabilityCount = liabilityCount,
+            TransactionCountThisMonth = transactionsThisMonth.Count,
+            IncomeThisMonth = transactionsThisMonth
+                .Where(t => t.Type == TransactionType.Income)
+                .Sum(t => t.Amount),
+            ExpensesThisMonth = transactionsThisMonth
+                .Where(t => t.Type == TransactionType.Expense)
+                .Sum(t => t.Amount),
+            RecentTransactions = recentTransactions
+        };
+
+        return Ok(summary);
+    }
+
+    private Guid GetUserId()
+    {
+        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? throw new UnauthorizedAccessException("User ID not found in token.");
+        return Guid.Parse(claim);
+    }
+}

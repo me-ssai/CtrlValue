@@ -1,0 +1,248 @@
+.setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 0;
+
+    .setting-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex: 1;
+
+        mat-icon {
+            font-size: 1.5rem;
+            width: 32px;
+            height: 32px;
+            color: var(--color-accent-primary);
+        }
+
+        .setting-label {
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .setting-description {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+        }
+    }
+
+    .currency-field {
+        width: 120px;
+        margin-bottom: -1.25em; // Offset Material's default margin
+    }
+}
+
+.settings-form {
+    .full-width {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    .form-actions {
+        margin-top: 0.5rem;
+        display: flex;
+        gap: 1rem;
+
+        button {
+            mat-icon {
+                margin-right: 0.5rem;
+            }
+        }
+    }
+}
+
+// ── 2FA ───────────────────────────────────────────────────────────────────────
+
+.two-fa-row {
+    align-items: flex-start;
+    padding: 1.25rem 0;
+}
+
+.two-fa-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--color-accent-primary) 15%, transparent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.3s, box-shadow 0.3s;
+
+    mat-icon {
+        color: var(--color-accent-primary);
+        font-size: 1.4rem;
+        width: 1.4rem;
+        height: 1.4rem;
+    }
+
+    &.enabled {
+        background: color-mix(in srgb, #22c55e 15%, transparent);
+        box-shadow: 0 0 12px color-mix(in srgb, #22c55e 30%, transparent);
+
+        mat-icon {
+            color: #22c55e;
+        }
+    }
+}
+
+.two-fa-controls {
+    display: flex;
+    align-items: center;
+    min-width: 48px;
+    justify-content: flex-end;
+}
+
+.badge-enabled {
+    display: inline-block;
+    background: color-mix(in srgb, #22c55e 20%, transparent);
+    color: #22c55e;
+    border: 1px solid color-mix(in srgb, #22c55e 40%, transparent);
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 1px 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
+.section-divider {
+    margin: 1.5rem 0 !important;
+    border-color: var(--color-border) !important;
+}
+
+.subsection-label {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--color-text-primary);
+    margin: 0 0 1rem;
+}
+
+
+// Material overrides for theme compatibility
+::ng-deep {
+    .settings-card {
+        .mat-mdc-card {
+            background: var(--color-bg-card);
+            color: var(--color-text-primary);
+        }
+
+        .mat-mdc-form-field {
+            .mat-mdc-text-field-wrapper {
+                background: var(--color-bg-input);
+            }
+
+            .mat-mdc-form-field-focus-overlay {
+                background-color: transparent;
+            }
+        }
+
+        .mat-mdc-slide-toggle {
+            .mdc-switch__track {
+                &::before {
+                    background: var(--color-border);
+                }
+            }
+
+            &.mat-mdc-slide-toggle-checked {
+                .mdc-switch__track::before {
+                    background: var(--color-accent-primary);
+                }
+            }
+        }
+    }
+}
+
+// ── Entity / Workspace Management ────────────────────────────────────────────
+
+.entity-item {
+    padding: 4px 0;
+}
+
+.entity-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+}
+
+.entity-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .entity-icon {
+        color: var(--color-accent-primary);
+        font-size: 1.5rem;
+        width: 32px;
+        height: 32px;
+    }
+
+    .entity-name {
+        font-weight: 600;
+        color: var(--color-text-primary);
+        font-size: 0.95rem;
+    }
+
+    .entity-currency-badge {
+        display: inline-block;
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 1px 8px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--color-accent-primary) 15%, transparent);
+        color: var(--color-accent-primary);
+        margin-top: 2px;
+    }
+}
+
+.entity-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.entity-edit-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 12px 0;
+
+    .entity-edit-field {
+        flex: 1;
+        min-width: 180px;
+        margin-bottom: -1.25em;
+    }
+
+    .entity-currency-field {
+        width: 110px;
+        margin-bottom: -1.25em;
+    }
+}
+
+.entity-users-panel {
+    background: var(--color-bg-hover, #f9fafb);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 6px 0 12px;
+    border-left: 3px solid var(--color-accent-primary);
+}
+
+.entity-user-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+
+    .entity-user-email {
+        flex: 1;
+        font-size: 0.875rem;
+        color: var(--color-text-primary);
+    }
+}

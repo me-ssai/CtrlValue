@@ -1,0 +1,251 @@
+.page-container {
+    padding: 0;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+
+    h1 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+        font-family: var(--font-family-display);
+        font-size: 1.6rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+
+    .page-subtitle {
+        margin: 4px 0 0;
+        color: var(--color-text-muted);
+        font-size: 0.875rem;
+    }
+}
+
+// ── Sections ──
+.accounts-section {
+    margin-bottom: 2.5rem;
+}
+
+.section-header {
+    margin-bottom: 1rem;
+}
+
+.section-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .section-icon {
+        font-size: 1.1rem;
+        width: 1.1rem;
+        height: 1.1rem;
+
+        &.asset-icon    { color: var(--color-accent-success); }
+        &.liability-icon { color: var(--color-accent-danger); }
+    }
+
+    .section-title {
+        margin: 0;
+        font-family: var(--font-family-display);
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+    }
+
+    .section-count {
+        background: color-mix(in srgb, var(--color-accent-success) 12%, transparent);
+        color: var(--color-accent-success);
+        font-family: var(--font-family-mono);
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: var(--radius-sm);
+        border: 1px solid color-mix(in srgb, var(--color-accent-success) 25%, transparent);
+
+        &.liability-count {
+            background: color-mix(in srgb, var(--color-accent-danger) 12%, transparent);
+            color: var(--color-accent-danger);
+            border-color: color-mix(in srgb, var(--color-accent-danger) 25%, transparent);
+        }
+    }
+}
+
+// ── Card Grid ──
+.accounts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.account-card {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    cursor: pointer;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    &:hover {
+        border-color: var(--color-border-hover);
+        box-shadow: var(--shadow-md);
+    }
+
+    &:focus {
+        outline: 2px solid var(--color-accent-primary);
+        outline-offset: 2px;
+    }
+}
+
+.card-top {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    mat-icon {
+        font-size: 1.1rem;
+        width: 1.1rem;
+        height: 1.1rem;
+    }
+
+    &.asset-bg {
+        background: color-mix(in srgb, var(--color-accent-success) 12%, transparent);
+        color: var(--color-accent-success);
+    }
+
+    &.liability-bg {
+        background: color-mix(in srgb, var(--color-accent-danger) 12%, transparent);
+        color: var(--color-accent-danger);
+    }
+}
+
+.card-main {
+    flex: 1;
+    min-width: 0;
+
+    .card-name {
+        font-weight: 600;
+        font-size: 0.9rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: var(--color-text-primary);
+    }
+
+    .card-institution {
+        font-size: 0.78rem;
+        color: var(--color-text-muted);
+        margin-top: 2px;
+    }
+}
+
+.card-arrow {
+    color: var(--color-text-muted);
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.account-card:hover .card-arrow {
+    opacity: 1;
+}
+
+.card-value {
+    font-family: var(--font-family-mono);
+    font-size: 1.4rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+
+    &.asset-value     { color: var(--color-accent-success); }
+    &.liability-value { color: var(--color-accent-danger); }
+}
+
+.card-footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.card-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-family-mono);
+    font-size: 0.68rem;
+    font-weight: 400;
+    letter-spacing: 0.03em;
+    background: var(--color-bg-secondary);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+
+    mat-icon {
+        font-size: 0.75rem;
+        width: 0.75rem;
+        height: 0.75rem;
+    }
+
+    &.currency-chip {
+        background: color-mix(in srgb, var(--color-accent-primary) 10%, transparent);
+        color: var(--color-accent-primary);
+        border-color: color-mix(in srgb, var(--color-accent-primary) 25%, transparent);
+    }
+}
+
+// ── Loading / Empty ──
+.loading-state {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-text-muted);
+    padding: 2rem 0;
+    font-size: 0.875rem;
+
+    .spin-icon {
+        animation: spin 1s linear infinite;
+    }
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+
+    mat-icon { font-size: 40px; width: 40px; height: 40px; opacity: 0.3; color: var(--color-text-muted); }
+    h3 { margin: 1rem 0 0.5rem; font-family: var(--font-family-display); }
+    p { color: var(--color-text-muted); margin-bottom: 1.5rem; font-size: 0.875rem; }
+}
+
+.mt-4 { margin-top: 1rem; }
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}

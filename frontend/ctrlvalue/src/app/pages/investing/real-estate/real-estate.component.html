@@ -1,0 +1,103 @@
+<div class="page-container">
+    <div class="page-header">
+        <h1><mat-icon>home_work</mat-icon> Real Estate</h1>
+        <button mat-raised-button color="primary" (click)="addProperty()">
+            <mat-icon>add</mat-icon>
+            Add Property
+        </button>
+    </div>
+
+    <div class="table-container">
+        <table mat-table [dataSource]="dataSource" class="w-100">
+
+            <!-- Address Column -->
+            <ng-container matColumnDef="address">
+                <th mat-header-cell *matHeaderCellDef>Property</th>
+                <td mat-cell *matCellDef="let row">
+                    <div class="fw-semibold">{{ row.address }}</div>
+                    <div class="text-muted small" *ngIf="row.suburb || row.state">
+                        {{ row.suburb }}{{ row.suburb && row.state ? ', ' : '' }}{{ row.state }}
+                        {{ row.postCode }}
+                    </div>
+                </td>
+            </ng-container>
+
+            <!-- Type Column -->
+            <ng-container matColumnDef="type">
+                <th mat-header-cell *matHeaderCellDef>Type</th>
+                <td mat-cell *matCellDef="let row">
+                    <mat-chip-set>
+                        <mat-chip>{{ row.propertyType | titlecase }}</mat-chip>
+                    </mat-chip-set>
+                    <div class="small text-muted" *ngIf="row.isRental">
+                        <mat-icon style="font-size:14px;height:14px;width:14px;">key</mat-icon> Rental
+                    </div>
+                </td>
+            </ng-container>
+
+            <!-- Specs Column -->
+            <ng-container matColumnDef="specs">
+                <th mat-header-cell *matHeaderCellDef>Specs</th>
+                <td mat-cell *matCellDef="let row" class="text-muted small">
+                    <span *ngIf="row.bedrooms">{{ row.bedrooms }} bed &nbsp;</span>
+                    <span *ngIf="row.bathrooms">{{ row.bathrooms }} bath &nbsp;</span>
+                    <span *ngIf="row.carSpaces">{{ row.carSpaces }} car</span>
+                    <div *ngIf="row.landSizeSqm">{{ row.landSizeSqm | number:'1.0-0' }} m²</div>
+                </td>
+            </ng-container>
+
+            <!-- Purchase Price Column -->
+            <ng-container matColumnDef="purchasePrice">
+                <th mat-header-cell *matHeaderCellDef>Purchase Price</th>
+                <td mat-cell *matCellDef="let row">{{ row.purchasePrice | currency }}</td>
+            </ng-container>
+
+            <!-- Current Value Column -->
+            <ng-container matColumnDef="currentValue">
+                <th mat-header-cell *matHeaderCellDef>Current Value</th>
+                <td mat-cell *matCellDef="let row" class="fw-semibold">
+                    {{ row.currentValue | currency }}
+                    <div class="text-muted small" *ngIf="row.latestValuationAsOfDate">
+                        as of {{ row.latestValuationAsOfDate | date:'mediumDate' }}
+                    </div>
+                </td>
+            </ng-container>
+
+            <!-- Gain Column -->
+            <ng-container matColumnDef="gain">
+                <th mat-header-cell *matHeaderCellDef>Gain / Loss</th>
+                <td mat-cell *matCellDef="let row"
+                    [class.gain]="gain(row) > 0"
+                    [class.loss]="gain(row) < 0">
+                    {{ gain(row) | currency }}
+                    <div class="small">{{ gainPercent(row) | number:'1.1-1' }}%</div>
+                </td>
+            </ng-container>
+
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef>Actions</th>
+                <td mat-cell *matCellDef="let row" class="actions-cell">
+                    <a mat-icon-button [routerLink]="['/accounts', row.accountId]" matTooltip="View account & transactions">
+                        <mat-icon>open_in_new</mat-icon>
+                    </a>
+                    <button mat-icon-button color="primary" (click)="editProperty(row.id)" matTooltip="Edit">
+                        <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="deleteProperty(row.id)" matTooltip="Delete">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+            <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell empty-state" colspan="7">
+                    No properties added yet. Click "Add Property" to get started.
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>

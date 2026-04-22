@@ -1,0 +1,848 @@
+<div class="dashboard-page" *ngIf="summary">
+    <mat-tab-group class="dashboard-tabs" mat-stretch-tabs="false" mat-align-tabs="start" animationDuration="0ms">
+        <!-- NET WORTH TAB -->
+        <mat-tab label="Net Worth">
+            <div class="tab-content pt-4">
+
+                <!-- Hero -->
+                <mat-card class="hero-card dashboard-section mb-4">
+                    <mat-card-content>
+                        <div class="hero-card-inner">
+                            <div class="hero-main">
+                                <div class="hero-label">Net Worth</div>
+                                <div class="hero-value">{{ formatCurrency(netWorthExclSuper) }}</div>
+                                <div class="hero-excl-super" *ngIf="superTotal > 0">
+                                    Incl. Super&ensp;<span class="hero-excl-super-value">{{ formatCurrency(summary.netWorth || 0) }}</span>
+                                </div>
+                                <div class="hero-subtext">
+                                    A snapshot of your current financial position
+                                </div>
+                            </div>
+
+                            <div class="hero-side">
+                                <div class="hero-mini-card asset">
+                                    <div class="hero-mini-label">Assets</div>
+                                    <div class="hero-mini-value">
+                                        {{ formatCurrency(assetsExclSuper) }}
+                                    </div>
+                                </div>
+
+                                <div class="hero-mini-card super" *ngIf="superTotal > 0">
+                                    <div class="hero-mini-label">Super</div>
+                                    <div class="hero-mini-value">{{ formatCurrency(superTotal) }}</div>
+                                </div>
+
+                                <div class="hero-mini-card liability">
+                                    <div class="hero-mini-label">Liabilities</div>
+                                    <div class="hero-mini-value ">
+                                        {{ formatCurrency(summary.totalLiabilities || 0) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+
+                <!-- Stats -->
+                <div class="row g-3 mb-4">
+                    <div class="col-xl-3 col-md-6">
+                        <mat-card class="stat-card h-100">
+                            <mat-card-content>
+                                <div class="stat-card-inner">
+                                    <div class="stat-icon income">
+                                        <mat-icon>arrow_downward</mat-icon>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-label">Income This Month</div>
+                                        <div class="stat-value">
+                                            {{ formatCurrency(summary.incomeThisMonth || 0) }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </mat-card-content>
+                        </mat-card>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6">
+                        <mat-card class="stat-card h-100">
+                            <mat-card-content>
+                                <div class="stat-card-inner">
+                                    <div class="stat-icon expense">
+                                        <mat-icon>arrow_upward</mat-icon>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-label">Expenses This Month</div>
+                                        <div class="stat-value">
+                                            {{ formatCurrency(summary.expensesThisMonth || 0) }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </mat-card-content>
+                        </mat-card>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6">
+                        <mat-card class="stat-card h-100">
+                            <mat-card-content>
+                                <div class="stat-card-inner">
+                                    <div class="stat-icon assets">
+                                        <mat-icon>account_balance</mat-icon>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-label">Total Assets</div>
+                                        <div class="stat-value">{{ summary.assetCount || 0 }}</div>
+                                    </div>
+                                </div>
+                            </mat-card-content>
+                        </mat-card>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6">
+                        <mat-card class="stat-card h-100">
+                            <mat-card-content>
+                                <div class="stat-card-inner">
+                                    <div class="stat-icon transactions">
+                                        <mat-icon>swap_horiz</mat-icon>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-label">Transactions</div>
+                                        <div class="stat-value">
+                                            {{ summary.transactionCountThisMonth || 0 }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </mat-card-content>
+                        </mat-card>
+                    </div>
+                </div>
+
+                <!-- Liquidity Breakdown -->
+                <mat-card class="dashboard-section liquidity-breakdown-card mb-4">
+                    <mat-card-header>
+                        <div class="section-header w-100">
+                            <div>
+                                <mat-card-title>Asset Liquidity</mat-card-title>
+                                <div class="section-subtitle">Breakdown of assets by accessibility tier</div>
+                            </div>
+                        </div>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <div class="liquidity-grid">
+                            <div class="liquidity-tile"
+                                 *ngFor="let tier of liquidityBreakdown"
+                                 [ngClass]="tier.colorClass">
+                                <div class="liq-tile-header">
+                                    <div class="liq-icon"><mat-icon>{{ tier.icon }}</mat-icon></div>
+                                    <div class="liq-label">{{ tier.label }}</div>
+                                </div>
+                                <div class="liq-value">{{ formatCurrency(tier.total) }}</div>
+                                <div class="liq-pct-row">
+                                    <div class="liq-pct-bar-wrap">
+                                        <div class="liq-pct-bar-fill" [style.width.%]="tier.percentage"></div>
+                                    </div>
+                                    <span class="liq-pct-label">{{ tier.percentage | number:'1.1-1' }}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+
+                <!-- Recent Transactions -->
+                <mat-card class="dashboard-section recent-transactions">
+                    <mat-card-header>
+                        <div class="section-header w-100">
+                            <div>
+                                <mat-card-title>Recent Transactions</mat-card-title>
+                                <div class="section-subtitle">Your latest financial activity</div>
+                            </div>
+                        </div>
+                    </mat-card-header>
+
+                    <mat-card-content>
+                        <div class="transactions-list"
+                            *ngIf="summary.recentTransactions && summary.recentTransactions.length > 0; else noTransactions">
+                            <div class="transaction-item" *ngFor="let tx of summary.recentTransactions">
+                                <div class="transaction-left">
+                                    <div class="tx-icon" [ngClass]="getTransactionCssClass(tx.type)">
+                                        <mat-icon>{{ getTransactionIcon(tx.type ?? '') }}</mat-icon>
+                                    </div>
+
+                                    <div class="tx-details">
+                                        <div class="tx-description">{{ tx.description }}</div>
+                                        <div class="tx-meta">
+                                            <span class="tx-category">{{ tx.category || 'Uncategorised' }}</span>
+                                            <span class="tx-account" *ngIf="tx.accountName">· {{ tx.accountName }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="tx-amount" [ngClass]="{
+                    positive: getTransactionSign(tx.type ?? '') === '+',
+                    negative: getTransactionSign(tx.type ?? '') === '-'
+                  }">
+                                    {{ getTransactionSign(tx.type ?? '') }}{{ formatCurrency(tx.amount ?? 0) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <ng-template #noTransactions>
+                            <div class="empty-state">
+                                <mat-icon>inbox</mat-icon>
+                                <p>No transactions yet. Start tracking your finances!</p>
+                            </div>
+                        </ng-template>
+                    </mat-card-content>
+                </mat-card>
+            </div>
+        </mat-tab>
+
+        <!-- HOLDINGS TAB -->
+        <mat-tab label="Holdings">
+            <div class="tab-content pt-4 holdings-tab">
+                <mat-card class="dashboard-section holdings-card">
+                    <mat-card-header>
+                        <div class="section-header w-100">
+                            <div>
+                                <mat-card-title>Account Holdings</mat-card-title>
+                                <div class="section-subtitle">
+                                    A card view of all accounts and their current values
+                                </div>
+                            </div>
+
+                            <button mat-stroked-button color="primary" (click)="refreshBalances()"
+                                [disabled]="refreshingBalances">
+                                <mat-icon *ngIf="!refreshingBalances">refresh</mat-icon>
+                                <mat-spinner diameter="20" *ngIf="refreshingBalances"
+                                    class="d-inline-block me-2 align-middle"></mat-spinner>
+                                {{ refreshingBalances ? 'Recalculating...' : 'Refresh Balances' }}
+                            </button>
+                        </div>
+                    </mat-card-header>
+
+                    <mat-card-content>
+                        <div *ngIf="sortedHoldings.length > 0; else noHoldings">
+
+                            <!-- Assets -->
+                            <div class="holdings-section" *ngIf="assetHoldings.length > 0">
+                                <div class="holdings-section-title">Assets</div>
+
+                                <div class="holdings-grid">
+                                    <mat-card class="holding-item-card" *ngFor="let holding of assetHoldings"
+                                        (click)="navigateToAccount(holding.accountId)"
+                                        matTooltip="View account details">
+                                        <mat-card-content>
+                                            <div class="holding-top">
+                                                <div class="holding-icon">
+                                                    <mat-icon>account_balance_wallet</mat-icon>
+                                                </div>
+
+                                                <div class="holding-main">
+                                                    <div class="holding-name">{{ holding.accountName }}</div>
+                                                    <div class="holding-institution">
+                                                        {{ holding.institution || 'No institution linked' }}
+                                                    </div>
+                                                </div>
+
+                                                <div class="holding-value" [ngClass]="{
+                                                positive: holding.accountType === 'ASSET',
+                                                negative: holding.accountType === 'LIABILITY'
+                                            }">
+                                                    {{ formatCurrency(getHoldingValue(holding.accountType!,
+                                                    holding.value)) }}
+                                                </div>
+                                            </div>
+
+                                            <div class="holding-footer">
+                                                <span class="holding-chip">
+                                                    <mat-icon>badge</mat-icon>
+                                                    {{ holding.accountType }}
+                                                </span>
+
+                                                <span class="holding-chip muted" *ngIf="holding.institution">
+                                                    <mat-icon>business</mat-icon>
+                                                    {{ holding.institution }}
+                                                </span>
+
+                                                <span class="holding-chip" *ngIf="holding.assetClass">
+                                                    <mat-icon>category</mat-icon>
+                                                    {{ holding.assetClass }}
+                                                </span>
+
+                                                <span class="holding-chip" *ngIf="holding.liquidityClass">
+                                                    <mat-icon>water_drop</mat-icon>
+                                                    {{ holding.liquidityClass }}
+                                                </span>
+
+                                                <span class="holding-chip muted">
+                                                    {{ holding.currency }}
+                                                </span>
+                                            </div>
+                                        </mat-card-content>
+                                    </mat-card>
+                                </div>
+                            </div>
+
+                            <!-- Liabilities -->
+                            <div class="holdings-section mt-4" *ngIf="liabilityHoldings.length > 0">
+                                <div class="holdings-section-title">Liabilities</div>
+
+                                <div class="holdings-grid">
+                                    <mat-card class="holding-item-card" *ngFor="let holding of liabilityHoldings"
+                                        (click)="navigateToAccount(holding.accountId)"
+                                        matTooltip="View account details">
+                                        <mat-card-content>
+                                            <div class="holding-top">
+                                                <div class="holding-icon">
+                                                    <mat-icon>account_balance_wallet</mat-icon>
+                                                </div>
+
+                                                <div class="holding-main">
+                                                    <div class="holding-name">{{ holding.accountName }}</div>
+                                                    <div class="holding-institution">
+                                                        {{ holding.institution || 'No institution linked' }}
+                                                    </div>
+                                                </div>
+
+                                                <div class="holding-value" [ngClass]="{
+                                                positive: holding.accountType === 'ASSET',
+                                                negative: holding.accountType === 'LIABILITY'
+                                            }">
+                                                    {{ formatCurrency(getHoldingValue(holding.accountType!,
+                                                    holding.value)) }}
+                                                </div>
+                                            </div>
+
+                                            <div class="holding-footer">
+                                                <span class="holding-chip">
+                                                    <mat-icon>badge</mat-icon>
+                                                    {{ holding.accountType }}
+                                                </span>
+
+                                                <span class="holding-chip muted" *ngIf="holding.institution">
+                                                    <mat-icon>business</mat-icon>
+                                                    {{ holding.institution }}
+                                                </span>
+
+                                                <span class="holding-chip" *ngIf="holding.liquidityClass">
+                                                    <mat-icon>water_drop</mat-icon>
+                                                    {{ holding.liquidityClass }}
+                                                </span>
+
+                                                <span class="holding-chip muted">
+                                                    {{ holding.currency }}
+                                                </span>
+                                            </div>
+                                        </mat-card-content>
+                                    </mat-card>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Asset Allocation Chart -->
+                        <div class="allocation-chart-wrap" *ngIf="assetHoldings.length > 1">
+                            <mat-divider style="margin: 1.5rem 0"></mat-divider>
+                            <div class="holdings-section-title">Asset Allocation</div>
+                            <div class="allocation-chart-container">
+                                <canvas baseChart
+                                    [data]="allocationChartData"
+                                    [options]="allocationChartOptions"
+                                    type="doughnut">
+                                </canvas>
+                            </div>
+                        </div>
+
+                        <ng-template #noHoldings>
+                            <div class="empty-state p-5 text-center text-muted">
+                                <mat-icon class="mb-3"
+                                    style="font-size: 48px; width: 48px; height: 48px; opacity: 0.5;">
+                                    account_balance
+                                </mat-icon>
+                                <p>No holdings data available.</p>
+                            </div>
+                        </ng-template>
+                    </mat-card-content>
+                </mat-card>
+            </div>
+        </mat-tab>
+
+        <!-- LOANS TAB -->
+        <mat-tab label="Loans">
+            <div class="tab-content pt-4 loans-tab">
+
+                <!-- Loading -->
+                <div class="loans-loading" *ngIf="loansLoading">
+                    <mat-spinner diameter="28"></mat-spinner>
+                    <span>Loading loan data...</span>
+                </div>
+
+                <!-- No loans -->
+                <div class="empty-state" *ngIf="!loansLoading && loanSummaries.length === 0">
+                    <mat-icon>home_work</mat-icon>
+                    <p>No loan accounts configured yet.<br>Create a <strong>LIABILITY</strong> account and set up loan details from the account page.</p>
+                </div>
+
+                <!-- Loan Summary Cards -->
+                <div class="loans-grid" *ngIf="!loansLoading && loanSummaries.length > 0">
+                    <mat-card class="loan-summary-card" *ngFor="let loan of loanSummaries">
+                        <mat-card-content>
+
+                            <!-- Card Header -->
+                            <div class="loan-card-header">
+                                <div class="loan-card-title">
+                                    <mat-icon>home</mat-icon>
+                                    <span>{{ loan.accountName }}</span>
+                                </div>
+                                <span class="lvr-badge" [ngClass]="lvrClass(loan.lvr)"
+                                    [matTooltip]="loan.propertyValue ? 'Property value: ' + formatCurrency(loan.propertyValue) : 'No property linked'">
+                                    <ng-container *ngIf="loan.lvr">LVR {{ (loan.lvr * 100).toFixed(1) }}%</ng-container>
+                                    <ng-container *ngIf="!loan.lvr">LVR —</ng-container>
+                                </span>
+                            </div>
+
+                            <!-- Fixed rate expiry warning -->
+                            <div class="fixed-expiry-warn" *ngIf="loan.rateType === 'Fixed' && loan.daysUntilFixedRateExpiry !== null && (loan.daysUntilFixedRateExpiry ?? 999) <= 90">
+                                <mat-icon>warning</mat-icon>
+                                Fixed rate expires in {{ loan.daysUntilFixedRateExpiry }} days
+                            </div>
+
+                            <!-- Stats grid -->
+                            <div class="loan-stats">
+                                <div class="loan-stat">
+                                    <div class="loan-stat-label">Remaining Balance</div>
+                                    <div class="loan-stat-value primary">{{ formatCurrency(loan.remainingBalance ?? 0) }}</div>
+                                </div>
+                                <div class="loan-stat">
+                                    <div class="loan-stat-label">Interest Rate</div>
+                                    <div class="loan-stat-value">{{ formatRate(loan.currentInterestRate) }} <span class="rate-type-chip">{{ loan.rateType }}</span></div>
+                                </div>
+                                <div class="loan-stat">
+                                    <div class="loan-stat-label">Next Payment</div>
+                                    <div class="loan-stat-value">
+                                        {{ formatCurrency(loan.nextPaymentAmount ?? 0) }}
+                                        <span class="due-chip" [class.urgent]="(loan.daysUntilNextPayment ?? 99) <= 7">
+                                            Due in {{ loan.daysUntilNextPayment }} days
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="loan-stat">
+                                    <div class="loan-stat-label">Redraw Available</div>
+                                    <div class="loan-stat-value">{{ formatCurrency(loan.redrawAvailable ?? 0) }}</div>
+                                </div>
+                                <div class="loan-stat">
+                                    <div class="loan-stat-label">Months Remaining</div>
+                                    <div class="loan-stat-value">{{ loan.monthsRemaining }}</div>
+                                </div>
+                                <div class="loan-stat">
+                                    <div class="loan-stat-label">Total Interest Payable</div>
+                                    <div class="loan-stat-value">{{ formatCurrency(loan.totalInterestPayable ?? 0) }}</div>
+                                </div>
+                                <div class="loan-stat" *ngIf="loan.offsetBalance">
+                                    <div class="loan-stat-label">Offset Balance</div>
+                                    <div class="loan-stat-value accent">{{ formatCurrency(loan.offsetBalance ?? 0) }}</div>
+                                </div>
+                            </div>
+
+                            <mat-divider style="margin: 1rem 0"></mat-divider>
+
+                            <!-- Extra Payment Calculator -->
+                            <div class="extra-payment-calc">
+                                <div class="section-label">Extra Payment Calculator</div>
+                                <div class="calc-row">
+                                    <mat-form-field appearance="outline" class="extra-pay-field">
+                                        <mat-label>Extra payment per period ($)</mat-label>
+                                        <input matInput type="number" [(ngModel)]="extraPayments[loan.accountId!]"
+                                            min="0" step="50" [id]="'extra-' + loan.accountId" />
+                                    </mat-form-field>
+                                    <button mat-raised-button color="accent" (click)="refreshSchedule(loan.accountId!)"
+                                        [id]="'calc-btn-' + loan.accountId">
+                                        <mat-icon>calculate</mat-icon>
+                                        Run Schedule
+                                    </button>
+                                </div>
+
+                                <!-- Schedule savings summary -->
+                                <div class="savings-summary" *ngIf="schedules[loan.accountId!] && schedules[loan.accountId!].extraPaymentPerPeriod > 0">
+                                    <div class="saving-chip">
+                                        <mat-icon>schedule</mat-icon>
+                                        <strong>{{ schedules[loan.accountId!].monthsSaved }}</strong> months saved
+                                    </div>
+                                    <div class="saving-chip green">
+                                        <mat-icon>savings</mat-icon>
+                                        <strong>{{ formatCurrency(schedules[loan.accountId!].interestSaved) }}</strong> interest saved
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Amortisation Schedule Toggle -->
+                            <div class="schedule-toggle">
+                                <button mat-stroked-button (click)="loadSchedule(loan.accountId!)"
+                                    [disabled]="scheduleLoading[loan.accountId!]"
+                                    [id]="'schedule-toggle-' + loan.accountId">
+                                    <mat-spinner *ngIf="scheduleLoading[loan.accountId!]" diameter="16" style="display:inline-block;margin-right:6px"></mat-spinner>
+                                    <mat-icon *ngIf="!scheduleLoading[loan.accountId!]">
+                                        {{ expandedSchedule[loan.accountId!] ? 'expand_less' : 'expand_more' }}
+                                    </mat-icon>
+                                    {{ expandedSchedule[loan.accountId!] ? 'Hide Schedule' : 'View Amortisation Schedule' }}
+                                </button>
+                                <button mat-icon-button color="primary"
+                                    *ngIf="schedules[loan.accountId!]"
+                                    (click)="exportScheduleToCsv(loan.accountId!)"
+                                    matTooltip="Export schedule to CSV">
+                                    <mat-icon>download</mat-icon>
+                                </button>
+                            </div>
+
+                            <!-- Amortisation table + chart side by side -->
+                            <div class="schedule-layout" *ngIf="expandedSchedule[loan.accountId!] && schedules[loan.accountId!]">
+
+                                <!-- Left: table -->
+                                <div class="schedule-table-wrap">
+                                    <div class="schedule-tabs">
+                                        <mat-tab-group animationDuration="0ms">
+                                            <mat-tab label="Standard">
+                                                <div class="table-scroll">
+                                                    <table mat-table [dataSource]="getScheduleDataSource(loan.accountId!)" class="amort-table">
+                                                        <ng-container matColumnDef="paymentNumber">
+                                                            <th mat-header-cell *matHeaderCellDef>#</th>
+                                                            <td mat-cell *matCellDef="let r">{{ r.paymentNumber }}</td>
+                                                        </ng-container>
+                                                        <ng-container matColumnDef="paymentDate">
+                                                            <th mat-header-cell *matHeaderCellDef>Date</th>
+                                                            <td mat-cell *matCellDef="let r">{{ r.paymentDate | date:'MMM yyyy' }}</td>
+                                                        </ng-container>
+                                                        <ng-container matColumnDef="paymentAmount">
+                                                            <th mat-header-cell *matHeaderCellDef>Payment</th>
+                                                            <td mat-cell *matCellDef="let r">{{ formatCurrency(r.paymentAmount) }}</td>
+                                                        </ng-container>
+                                                        <ng-container matColumnDef="principal">
+                                                            <th mat-header-cell *matHeaderCellDef>Principal</th>
+                                                            <td mat-cell *matCellDef="let r" class="col-principal">{{ formatCurrency(r.principal) }}</td>
+                                                        </ng-container>
+                                                        <ng-container matColumnDef="interest">
+                                                            <th mat-header-cell *matHeaderCellDef>Interest</th>
+                                                            <td mat-cell *matCellDef="let r" class="col-interest">{{ formatCurrency(r.interest) }}</td>
+                                                        </ng-container>
+                                                        <ng-container matColumnDef="cumulativeInterest">
+                                                            <th mat-header-cell *matHeaderCellDef>Cumulative Interest</th>
+                                                            <td mat-cell *matCellDef="let r">{{ formatCurrency(r.cumulativeInterest) }}</td>
+                                                        </ng-container>
+                                                        <ng-container matColumnDef="balance">
+                                                            <th mat-header-cell *matHeaderCellDef>Balance</th>
+                                                            <td mat-cell *matCellDef="let r"><strong>{{ formatCurrency(r.balance) }}</strong></td>
+                                                        </ng-container>
+                                                        <tr mat-header-row *matHeaderRowDef="scheduleColumns; sticky: true"></tr>
+                                                        <tr mat-row *matRowDef="let r; columns: scheduleColumns;"></tr>
+                                                    </table>
+                                                </div>
+                                            </mat-tab>
+                                            <mat-tab label="With Extra Payment" *ngIf="schedules[loan.accountId!].extraPaymentPerPeriod > 0">
+                                                <div class="schedule-savings-header">
+                                                    Extra <strong>{{ formatCurrency(schedules[loan.accountId!].extraPaymentPerPeriod) }}</strong>/period →
+                                                    saves <strong>{{ schedules[loan.accountId!].monthsSaved }} months</strong> &
+                                                    <strong>{{ formatCurrency(schedules[loan.accountId!].interestSaved) }}</strong> interest
+                                                </div>
+                                                <div class="table-scroll">
+                                                    <table mat-table [dataSource]="getAcceleratedDataSource(loan.accountId!)" class="amort-table">
+                                                        <ng-container matColumnDef="paymentNumber">
+                                                            <th mat-header-cell *matHeaderCellDef>#</th>
+                                                            <td mat-cell *matCellDef="let r">{{ r.paymentNumber }}</td>
+                                                        </ng-container>
+                                                        <ng-container matColumnDef="paymentDate">
+                                                            <th mat-header-cell *matHeaderCellDef>Date</th>
+                                                            <td mat-cell *matCellDef="let r">{{ r.paymentDate | date:'MMM yyyy' }}</td>
+                                                        </ng-container>
+                                                        <ng-container matColumnDef="paymentAmount">
+                                                            <th mat-header-cell *matHeaderCellDef>Payment</th>
+                                                            <td mat-cell *matCellDef="let r">{{ formatCurrency(r.paymentAmount) }}</td>
+                                                        </ng-container>
+                                                        <ng-container matColumnDef="principal">
+                                                            <th mat-header-cell *matHeaderCellDef>Principal</th>
+                                                            <td mat-cell *matCellDef="let r" class="col-principal">{{ formatCurrency(r.principal) }}</td>
+                                                        </ng-container>
+                                                        <ng-container matColumnDef="interest">
+                                                            <th mat-header-cell *matHeaderCellDef>Interest</th>
+                                                            <td mat-cell *matCellDef="let r" class="col-interest">{{ formatCurrency(r.interest) }}</td>
+                                                        </ng-container>
+                                                        <ng-container matColumnDef="cumulativeInterest">
+                                                            <th mat-header-cell *matHeaderCellDef>Cumulative Interest</th>
+                                                            <td mat-cell *matCellDef="let r">{{ formatCurrency(r.cumulativeInterest) }}</td>
+                                                        </ng-container>
+                                                        <ng-container matColumnDef="balance">
+                                                            <th mat-header-cell *matHeaderCellDef>Balance</th>
+                                                            <td mat-cell *matCellDef="let r"><strong>{{ formatCurrency(r.balance) }}</strong></td>
+                                                        </ng-container>
+                                                        <tr mat-header-row *matHeaderRowDef="scheduleColumns; sticky: true"></tr>
+                                                        <tr mat-row *matRowDef="let r; columns: scheduleColumns;"></tr>
+                                                    </table>
+                                                </div>
+                                            </mat-tab>
+                                        </mat-tab-group>
+                                    </div>
+                                </div>
+
+                                <!-- Right: chart -->
+                                <div class="loan-balance-chart">
+                                    <canvas baseChart
+                                        [data]="balanceChartDataCache[loan.accountId!]"
+                                        [options]="balanceChartOptions"
+                                        type="line">
+                                    </canvas>
+                                </div>
+
+                            </div><!-- /.schedule-layout -->
+
+                        </mat-card-content>
+                    </mat-card>
+                </div>
+
+            </div>
+        </mat-tab>
+
+        <!-- ════════════════════════════════════════════════════════
+             INSIGHTS TAB
+             ════════════════════════════════════════════════════════ -->
+        <mat-tab label="Insights">
+            <div class="tab-content pt-4 insights-tab">
+
+                <!-- ── Transfer Candidates Alert ──────────────────────────── -->
+                <div class="transfers-alert-section"
+                     *ngIf="transferCandidates.length > 0 || transferCandidatesLoading">
+
+                    <div class="insight-section-header">
+                        <div class="insight-section-title">
+                            <mat-icon class="insight-icon transfers">swap_horiz</mat-icon>
+                            Possible Transfers Detected
+                        </div>
+                        <span class="insight-badge warn">{{ transferCandidates.length }} unlinked</span>
+                    </div>
+
+                    <div *ngIf="transferCandidatesLoading" class="insight-loading">
+                        <mat-spinner diameter="20"></mat-spinner><span>Analysing transactions…</span>
+                    </div>
+
+                    <div class="transfer-candidates-list" *ngIf="!transferCandidatesLoading">
+                        <div class="transfer-candidate-card"
+                             *ngFor="let c of transferCandidates">
+                            <div class="tc-body">
+                                <div class="tc-leg outflow">
+                                    <mat-icon>south_east</mat-icon>
+                                    <div class="tc-leg-detail">
+                                        <span class="tc-account">{{ c.outflowAccount }}</span>
+                                        <span class="tc-desc">{{ c.outflowDescription }}</span>
+                                        <span class="tc-date">{{ c.outflowDate | date:'d MMM' }}</span>
+                                    </div>
+                                </div>
+                                <div class="tc-arrow">
+                                    <mat-icon>arrow_forward</mat-icon>
+                                    <span class="tc-amount">{{ formatCurrency(c.amount) }}</span>
+                                    <span class="tc-conf"
+                                          [matTooltip]="'Confidence: ' + (c.confidence * 100 | number:'1.0-0') + '%'">
+                                        {{ (c.confidence * 100 | number:'1.0-0') }}%
+                                    </span>
+                                </div>
+                                <div class="tc-leg inflow">
+                                    <mat-icon>north_west</mat-icon>
+                                    <div class="tc-leg-detail">
+                                        <span class="tc-account">{{ c.inflowAccount }}</span>
+                                        <span class="tc-desc">{{ c.inflowDescription }}</span>
+                                        <span class="tc-date">{{ c.inflowDate | date:'d MMM' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tc-actions">
+                                <button mat-flat-button color="primary"
+                                        id="link-transfer-btn-{{ c.outflowTxnId }}"
+                                        (click)="confirmLinkTransfer(c)">
+                                    <mat-icon>link</mat-icon>
+                                    Link as Transfer
+                                </button>
+                                <button mat-button
+                                        (click)="dismissTransferCandidate(c)"
+                                        matTooltip="Dismiss — not a transfer">
+                                    <mat-icon>close</mat-icon>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="tc-empty" *ngIf="!transferCandidatesLoading && transferCandidates.length === 0">
+                        <mat-icon>check_circle</mat-icon>
+                        No unlinked transfer candidates in the last 14 days.
+                    </p>
+                </div>
+
+                <!-- ── Cash Flow ──────────────────────────────────────────── -->
+                <mat-card class="insight-card mt-4">
+                    <mat-card-header>
+                        <mat-card-title>
+                            <mat-icon class="insight-icon cashflow">waterfall_chart</mat-icon>
+                            Cash Flow — Last 6 Months
+                        </mat-card-title>
+                        <mat-card-subtitle>
+                            Income vs expenses (internal transfers excluded)
+                        </mat-card-subtitle>
+                    </mat-card-header>
+
+                    <mat-card-content>
+                        <div *ngIf="cashFlowLoading" class="insight-loading">
+                            <mat-spinner diameter="20"></mat-spinner><span>Loading cash flow…</span>
+                        </div>
+
+                        <div *ngIf="!cashFlowLoading && cashFlow.length === 0" class="insight-empty">
+                            <mat-icon>bar_chart</mat-icon>
+                            <p>Not enough data yet.</p>
+                        </div>
+
+                        <div class="cashflow-table-wrap" *ngIf="!cashFlowLoading && cashFlow.length > 0">
+                            <table class="cashflow-table">
+                                <thead>
+                                    <tr>
+                                        <th>Month</th>
+                                        <th class="num">Income</th>
+                                        <th class="num">Expenses</th>
+                                        <th class="num">Net</th>
+                                        <th class="bar-col">Visualisation</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let row of cashFlow">
+                                        <td class="month-label">{{ formatMonth(row.year, row.month) }}</td>
+                                        <td class="num income-val">{{ formatCurrency(row.totalIncome) }}</td>
+                                        <td class="num expense-val">{{ formatCurrency(row.totalExpenses) }}</td>
+                                        <td class="num net-val"
+                                            [class.positive]="row.net >= 0"
+                                            [class.negative]="row.net < 0">
+                                            {{ row.net >= 0 ? '+' : '' }}{{ formatCurrency(row.net) }}
+                                        </td>
+                                        <td class="bar-col">
+                                            <div class="cf-bar-wrap">
+                                                <div class="cf-bar income-bar"
+                                                     [style.width.%]="(row.totalIncome / (row.totalIncome + row.totalExpenses || 1)) * 100"
+                                                     [matTooltip]="'Income: ' + formatCurrency(row.totalIncome)">
+                                                </div>
+                                                <div class="cf-bar expense-bar"
+                                                     [style.width.%]="(row.totalExpenses / (row.totalIncome + row.totalExpenses || 1)) * 100"
+                                                     [matTooltip]="'Expenses: ' + formatCurrency(row.totalExpenses)">
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+
+                <!-- ── Subscriptions / Recurring ─────────────────────────── -->
+                <mat-card class="insight-card mt-4">
+                    <mat-card-header>
+                        <mat-card-title>
+                            <mat-icon class="insight-icon recurring">repeat</mat-icon>
+                            Recurring Payments
+                        </mat-card-title>
+                        <mat-card-subtitle>
+                            Subscriptions and standing orders detected in the last 6 months
+                        </mat-card-subtitle>
+                    </mat-card-header>
+
+                    <mat-card-content>
+                        <div *ngIf="recurringLoading" class="insight-loading">
+                            <mat-spinner diameter="20"></mat-spinner><span>Detecting patterns…</span>
+                        </div>
+
+                        <div *ngIf="!recurringLoading && recurringPatterns.length === 0" class="insight-empty">
+                            <mat-icon>event_repeat</mat-icon>
+                            <p>No recurring payments detected yet. Check back after more transactions are synced.</p>
+                        </div>
+
+                        <div class="recurring-grid" *ngIf="!recurringLoading && recurringPatterns.length > 0">
+                            <div class="recurring-card" *ngFor="let p of recurringPatterns">
+                                <div class="rc-icon">
+                                    <mat-icon>{{ p.cadence === 'Annual' ? 'calendar_today' : 'autorenew' }}</mat-icon>
+                                </div>
+                                <div class="rc-body">
+                                    <div class="rc-name">{{ p.displayName || p.merchantNormalised }}</div>
+                                    <div class="rc-meta">
+                                        <span class="rc-cadence-chip">{{ p.cadence }}</span>
+                                        <span class="rc-occurrences">{{ p.occurrenceCount }}×</span>
+                                        <span class="rc-next" *ngIf="p.predictedNextDate"
+                                              [matTooltip]="'Predicted next: ' + (p.predictedNextDate | date:'d MMM yyyy')">
+                                            <mat-icon class="rc-next-icon">schedule</mat-icon>
+                                            {{ p.predictedNextDate | date:'d MMM' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="rc-amount">
+                                    {{ formatCurrency(p.typicalAmount) }}
+                                    <span class="rc-currency">{{ p.currency }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Monthly subscription total -->
+                        <div class="recurring-total"
+                             *ngIf="!recurringLoading && recurringPatterns.length > 0">
+                            <mat-divider style="margin: 1rem 0"></mat-divider>
+                            <div class="recurring-total-row">
+                                <span class="recurring-total-label">
+                                    <mat-icon>calculate</mat-icon>
+                                    Estimated monthly recurring spend
+                                </span>
+                                <span class="recurring-total-value">
+                                    {{ formatCurrency(monthlyRecurringTotal) }}
+                                </span>
+                            </div>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+
+            </div><!-- /.insights-tab -->
+        </mat-tab>
+
+    </mat-tab-group>
+</div>
+
+<!-- Loading State -->
+<div class="d-flex flex-column align-items-center justify-content-center p-5 loading-state" *ngIf="loading">
+    <mat-spinner></mat-spinner>
+    <p class="mt-3 text-muted">Loading your financial data...</p>
+</div>
+
+<!-- Quick Add FAB -->
+<div class="quick-add-fab" *ngIf="!loading">
+    <!-- Speed dial items (shown when open) -->
+    <div class="fab-menu" [class.open]="fabOpen">
+        <div class="fab-item" (click)="quickAddTransaction(); fabOpen = false" matTooltip="Add Transaction" matTooltipPosition="left">
+            <button mat-mini-fab color="accent">
+                <mat-icon>swap_horiz</mat-icon>
+            </button>
+            <span class="fab-label">Add Transaction</span>
+        </div>
+        <div class="fab-item" (click)="quickAddAccount(); fabOpen = false" matTooltip="Add Account" matTooltipPosition="left">
+            <button mat-mini-fab color="accent">
+                <mat-icon>account_balance</mat-icon>
+            </button>
+            <span class="fab-label">Add Account</span>
+        </div>
+        <div class="fab-item" (click)="router.navigate(['/accounts']); fabOpen = false" matTooltip="View Accounts" matTooltipPosition="left">
+            <button mat-mini-fab>
+                <mat-icon>list</mat-icon>
+            </button>
+            <span class="fab-label">View Accounts</span>
+        </div>
+        <div class="fab-item" (click)="router.navigate(['/investing/stocks']); fabOpen = false" matTooltip="Investing" matTooltipPosition="left">
+            <button mat-mini-fab>
+                <mat-icon>show_chart</mat-icon>
+            </button>
+            <span class="fab-label">Investing</span>
+        </div>
+    </div>
+
+    <!-- Main FAB -->
+    <button mat-fab color="primary" class="main-fab"
+        (click)="fabOpen = !fabOpen"
+        [matTooltip]="fabOpen ? 'Close' : 'Quick Add'"
+        matTooltipPosition="left">
+        <mat-icon [class.rotated]="fabOpen">add</mat-icon>
+    </button>
+</div>

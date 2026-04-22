@@ -1,0 +1,3 @@
+// Register reuses login's auth styles (auth-glow, auth-card, auth-logo, auth-form etc.)
+// Centering now handled by Bootstrap utilities in the template
+@use '../../pages/login/login.component' as login;

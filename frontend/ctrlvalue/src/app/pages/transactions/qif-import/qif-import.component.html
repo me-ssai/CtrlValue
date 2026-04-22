@@ -1,0 +1,508 @@
+<h2 mat-dialog-title class="dialog-title">
+    <mat-icon class="title-icon">upload_file</mat-icon>
+    Import QIF Transactions
+    <button mat-icon-button class="close-btn" (click)="onCancelAttempt()" id="closeImportDialogBtn" matTooltip="Close">
+        <mat-icon>close</mat-icon>
+    </button>
+</h2>
+
+<mat-dialog-content class="import-dialog-content">
+    <mat-stepper #stepper linear orientation="horizontal" class="import-stepper">
+
+        <!-- ─────────────────────────────────────────────────────────────────── -->
+        <!-- STEP 1: Upload & Configure                                          -->
+        <!-- ─────────────────────────────────────────────────────────────────── -->
+        <mat-step [completed]="!!importFile">
+            <ng-template matStepLabel>Upload File</ng-template>
+
+            <div class="step-content">
+                <form [formGroup]="uploadForm" class="upload-form">
+
+                    <!-- Account Selector -->
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Target Account</mat-label>
+                        <mat-select formControlName="accountId" id="importAccountSelect">
+                            <mat-option *ngFor="let account of accounts" [value]="account.id">
+                                {{ account.name }}
+                                <span class="account-type-badge">{{ account.accountType }}</span>
+                            </mat-option>
+                        </mat-select>
+                        <mat-icon matPrefix>account_balance</mat-icon>
+                        <mat-error>Please select a target account</mat-error>
+                    </mat-form-field>
+
+                    <!-- Import Mode Toggle -->
+                    <div class="import-mode-section">
+                        <label class="mode-label">Duplicate handling</label>
+                        <mat-button-toggle-group formControlName="allowDuplicates" class="mode-toggle">
+                            <mat-button-toggle [value]="false">
+                                <mat-icon>block</mat-icon> Strict (Reject Duplicates)
+                            </mat-button-toggle>
+                            <mat-button-toggle [value]="true">
+                                <mat-icon>add_circle_outline</mat-icon> Allow Duplicates
+                            </mat-button-toggle>
+                        </mat-button-toggle-group>
+                    </div>
+
+                    <!-- Date Format Selector -->
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Date Format in File</mat-label>
+                        <mat-select formControlName="dateFormat">
+                            <mat-option value="DD/MM/YYYY">DD/MM/YYYY (e.g. 31/01/2025)</mat-option>
+                            <mat-option value="MM/DD/YYYY">MM/DD/YYYY (e.g. 01/31/2025)</mat-option>
+                            <mat-option value="YYYY-MM-DD">YYYY-MM-DD (e.g. 2025-01-31)</mat-option>
+                            <mat-option value="">Auto-detect</mat-option>
+                        </mat-select>
+                        <mat-icon matPrefix>calendar_today</mat-icon>
+                    </mat-form-field>
+
+                    <!-- File Drop Zone -->
+                    <div class="drop-zone" [class.has-file]="!!selectedFile">
+                        <ng-container *ngIf="!selectedFile; else fileSelected">
+                            <mat-icon class="upload-icon">cloud_upload</mat-icon>
+                            <p class="drop-label">Drop your <strong>.qif</strong> file here, or</p>
+                            <label class="file-label-btn" for="qifFileInput">
+                                <mat-icon>folder_open</mat-icon> Browse File
+                            </label>
+                            <input type="file" id="qifFileInput" accept=".qif" hidden (change)="onFileSelected($event)">
+                        </ng-container>
+                        <ng-template #fileSelected>
+                            <mat-icon class="file-icon">description</mat-icon>
+                            <p class="file-name">{{ selectedFile!.name }}</p>
+                            <p class="file-size">{{ (selectedFile!.size / 1024).toFixed(1) }} KB</p>
+                            <button mat-stroked-button color="warn" (click)="clearFile()" class="clear-btn">
+                                <mat-icon>close</mat-icon> Remove
+                            </button>
+                        </ng-template>
+                    </div>
+
+                </form>
+
+                <!-- Step Actions -->
+                <div class="step-actions">
+                    <button mat-raised-button color="primary"
+                        [disabled]="!selectedFile || uploadForm.invalid || uploading" (click)="upload(stepper)"
+                        id="uploadBtn">
+                        <mat-spinner *ngIf="uploading" diameter="18" class="btn-spinner"></mat-spinner>
+                        <mat-icon *ngIf="!uploading">cloud_upload</mat-icon>
+                        {{ uploading ? 'Uploading...' : 'Upload & Parse' }}
+                    </button>
+                </div>
+            </div>
+        </mat-step>
+
+        <!-- ─────────────────────────────────────────────────────────────────── -->
+        <!-- STEP 2: Review                                                       -->
+        <!-- ─────────────────────────────────────────────────────────────────── -->
+        <mat-step [completed]="!!(reviewData && !committing)">
+            <ng-template matStepLabel>Review</ng-template>
+
+            <div class="step-content review-step">
+
+                <!-- Loading Spinner -->
+                <div *ngIf="loadingReview" class="loading-container">
+                    <mat-spinner diameter="48"></mat-spinner>
+                    <p>Parsing file...</p>
+                </div>
+
+                <ng-container *ngIf="!loadingReview && reviewData">
+
+                    <!-- ── ALL ALREADY IMPORTED BANNER ── -->
+                    <div *ngIf="isAllAlreadyImported" class="all-done-banner">
+                        <mat-icon>check_circle</mat-icon>
+                        <div>
+                            <strong>All transactions already imported</strong>
+                            <p>Every transaction in this file has already been committed in a previous import. No action
+                                is required.</p>
+                        </div>
+                    </div>
+
+                    <!-- Summary Chips -->
+                    <div class="summary-chips">
+                        <div class="chip valid-chip">
+                            <mat-icon>check_circle</mat-icon>
+                            <span class="chip-count">{{ reviewData.file.validRows }}</span>
+                            <span>Valid</span>
+                        </div>
+                        <div class="chip already-chip">
+                            <mat-icon>history</mat-icon>
+                            <span class="chip-count">{{ reviewData.file.alreadyImportedRows }}</span>
+                            <span>Already Imported</span>
+                        </div>
+                        <div class="chip duplicate-chip">
+                            <mat-icon>content_copy</mat-icon>
+                            <span class="chip-count">{{ reviewData.file.duplicateRows }}</span>
+                            <span>Duplicates</span>
+                        </div>
+                        <div class="chip error-chip">
+                            <mat-icon>error_outline</mat-icon>
+                            <span class="chip-count">{{ reviewData.file.errorRows }}</span>
+                            <span>Errors</span>
+                        </div>
+                    </div>
+
+                    <!-- Tabs -->
+                    <mat-tab-group animationDuration="200ms" class="review-tabs">
+
+                        <!-- ── Valid Tab ────────────────────────────────────────────── -->
+                        <mat-tab>
+                            <ng-template mat-tab-label>
+                                <mat-icon class="tab-icon valid-icon">check_circle</mat-icon>
+                                Valid ({{ reviewData.file.validRows }})
+                            </ng-template>
+
+                            <div class="tab-search">
+                                <mat-form-field appearance="outline" class="search-field">
+                                    <mat-label>Search by description</mat-label>
+                                    <mat-icon matPrefix>search</mat-icon>
+                                    <input matInput [(ngModel)]="validSearch"
+                                        (ngModelChange)="applyFilter(validDataSource, $event)" id="validSearch">
+                                </mat-form-field>
+                            </div>
+
+                            <div class="table-container">
+                                <table mat-table [dataSource]="validDataSource" class="review-table">
+                                    <ng-container matColumnDef="date">
+                                        <th mat-header-cell *matHeaderCellDef>Date</th>
+                                        <td mat-cell *matCellDef="let row">{{ row.transactionDate | date:'dd MMM yyyy'
+                                            }}</td>
+                                    </ng-container>
+                                    <ng-container matColumnDef="description">
+                                        <th mat-header-cell *matHeaderCellDef>Description</th>
+                                        <td mat-cell *matCellDef="let row" class="description-cell">
+                                            <span [matTooltip]="row.notes || ''" matTooltipShowDelay="400">{{
+                                                row.description }}</span>
+                                        </td>
+                                    </ng-container>
+                                    <ng-container matColumnDef="amountRaw">
+                                        <th mat-header-cell *matHeaderCellDef class="amount-header">Amount</th>
+                                        <td mat-cell *matCellDef="let row" class="amount-cell"
+                                            [class.inflow]="row.amountRaw > 0" [class.outflow]="row.amountRaw < 0">
+                                            {{ formatAmount(row.amountRaw) }}
+                                        </td>
+                                    </ng-container>
+                                    <ng-container matColumnDef="counterAccount">
+                                        <th mat-header-cell *matHeaderCellDef>Counter Account</th>
+                                        <td mat-cell *matCellDef="let row">
+                                            <mat-select class="inline-select" [value]="row.counterAccountId || ''"
+                                                (selectionChange)="updateRowCounterAccount(row, $event.value)"
+                                                placeholder="Select...">
+                                                <mat-option value="">—</mat-option>
+                                                <mat-option *ngFor="let a of accounts" [value]="a.id">
+                                                    {{ a.name }}<ng-container *ngIf="a.institution"> · <span class="option-institution">{{ a.institution }}</span></ng-container>
+                                                </mat-option>
+                                            </mat-select>
+                                        </td>
+                                    </ng-container>
+                                    <ng-container matColumnDef="keyword">
+                                        <th mat-header-cell *matHeaderCellDef>Add Keyword</th>
+                                        <td mat-cell *matCellDef="let row">
+                                            <div class="keyword-cell" *ngIf="row.counterAccountId; else needsAccount">
+                                                <input class="keyword-input"
+                                                       [(ngModel)]="keywordInputs[row.id]"
+                                                       placeholder="Type keyword…"
+                                                       (keydown.enter)="addKeywordForRow(row, keywordInputs[row.id])"
+                                                       [disabled]="addingKeyword[row.id]" />
+                                                <button mat-icon-button class="keyword-save-btn"
+                                                        [disabled]="!keywordInputs[row.id]?.trim() || addingKeyword[row.id]"
+                                                        (click)="addKeywordForRow(row, keywordInputs[row.id])"
+                                                        matTooltip="Save keyword & apply to matching rows">
+                                                    <mat-spinner *ngIf="addingKeyword[row.id]" diameter="14"></mat-spinner>
+                                                    <mat-icon *ngIf="!addingKeyword[row.id]">add_circle_outline</mat-icon>
+                                                </button>
+                                            </div>
+                                            <ng-template #needsAccount>
+                                                <span class="keyword-hint">← pick account</span>
+                                            </ng-template>
+                                        </td>
+                                    </ng-container>
+                                    <ng-container matColumnDef="category">
+                                        <th mat-header-cell *matHeaderCellDef>Category</th>
+                                        <td mat-cell *matCellDef="let row"><span class="category-badge">{{
+                                                row.categoryName || 'Uncategorised' }}</span></td>
+                                    </ng-container>
+                                    <ng-container matColumnDef="actions">
+                                        <th mat-header-cell *matHeaderCellDef></th>
+                                        <td mat-cell *matCellDef="let row"></td>
+                                    </ng-container>
+                                    <tr mat-header-row *matHeaderRowDef="displayedValidColumns; sticky: true"></tr>
+                                    <tr mat-row *matRowDef="let row; columns: displayedValidColumns;"></tr>
+                                    <tr class="mat-row" *matNoDataRow>
+                                        <td class="mat-cell empty-cell" [attr.colspan]="displayedValidColumns.length">
+                                            <mat-icon>inbox</mat-icon>
+                                            <span>{{ validSearch ? 'No results' : 'No valid transactions' }}</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </mat-tab>
+
+                        <!-- ── Already Imported Tab ───────────────────────────────── -->
+                        <mat-tab>
+                            <ng-template mat-tab-label>
+                                <mat-icon class="tab-icon already-icon">history</mat-icon>
+                                Already Imported ({{ reviewData.file.alreadyImportedRows }})
+                            </ng-template>
+
+                            <div class="tab-search">
+                                <mat-form-field appearance="outline" class="search-field">
+                                    <mat-label>Search by description</mat-label>
+                                    <mat-icon matPrefix>search</mat-icon>
+                                    <input matInput [(ngModel)]="alreadyImportedSearch"
+                                        (ngModelChange)="applyFilter(alreadyImportedDataSource, $event)"
+                                        id="alreadyImportedSearch">
+                                </mat-form-field>
+                            </div>
+
+                            <div class="table-container">
+                                <table mat-table [dataSource]="alreadyImportedDataSource" class="review-table">
+                                    <ng-container matColumnDef="date">
+                                        <th mat-header-cell *matHeaderCellDef>Date</th>
+                                        <td mat-cell *matCellDef="let row">{{ row.transactionDate | date:'dd MMM yyyy'
+                                            }}</td>
+                                    </ng-container>
+                                    <ng-container matColumnDef="description">
+                                        <th mat-header-cell *matHeaderCellDef>Description</th>
+                                        <td mat-cell *matCellDef="let row" class="description-cell">{{ row.description
+                                            }}</td>
+                                    </ng-container>
+                                    <ng-container matColumnDef="amountRaw">
+                                        <th mat-header-cell *matHeaderCellDef class="amount-header">Amount</th>
+                                        <td mat-cell *matCellDef="let row" class="amount-cell"
+                                            [class.inflow]="row.amountRaw > 0" [class.outflow]="row.amountRaw < 0">
+                                            {{ formatAmount(row.amountRaw) }}
+                                        </td>
+                                    </ng-container>
+                                    <ng-container matColumnDef="status">
+                                        <th mat-header-cell *matHeaderCellDef>Status</th>
+                                        <td mat-cell *matCellDef="let row"><span class="status-badge already">Already
+                                                Imported</span></td>
+                                    </ng-container>
+                                    <ng-container matColumnDef="actions">
+                                        <th mat-header-cell *matHeaderCellDef></th>
+                                        <td mat-cell *matCellDef="let row">
+                                            <button mat-icon-button matTooltip="Force Import" (click)="forceImport(row)"
+                                                color="primary">
+                                                <mat-icon>add_task</mat-icon>
+                                            </button>
+                                        </td>
+                                    </ng-container>
+                                    <tr mat-header-row *matHeaderRowDef="displayedAlreadyImportedColumns; sticky: true">
+                                    </tr>
+                                    <tr mat-row *matRowDef="let row; columns: displayedAlreadyImportedColumns;"></tr>
+                                    <tr class="mat-row" *matNoDataRow>
+                                        <td class="mat-cell empty-cell"
+                                            [attr.colspan]="displayedAlreadyImportedColumns.length">
+                                            <mat-icon>check_circle_outline</mat-icon>
+                                            <span>{{ alreadyImportedSearch ? 'No results' : 'No previously imported
+                                                transactions' }}</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </mat-tab>
+
+                        <!-- ── Duplicates Tab ──────────────────────────────────────── -->
+                        <mat-tab>
+                            <ng-template mat-tab-label>
+                                <mat-icon class="tab-icon duplicate-icon">content_copy</mat-icon>
+                                Duplicates ({{ reviewData.file.duplicateRows }})
+                            </ng-template>
+
+                            <div class="tab-search">
+                                <mat-form-field appearance="outline" class="search-field">
+                                    <mat-label>Search by description</mat-label>
+                                    <mat-icon matPrefix>search</mat-icon>
+                                    <input matInput [(ngModel)]="duplicateSearch"
+                                        (ngModelChange)="applyFilter(duplicateDataSource, $event)" id="duplicateSearch">
+                                </mat-form-field>
+                            </div>
+
+                            <div class="table-container">
+                                <table mat-table [dataSource]="duplicateDataSource" class="review-table">
+                                    <ng-container matColumnDef="date">
+                                        <th mat-header-cell *matHeaderCellDef>Date</th>
+                                        <td mat-cell *matCellDef="let row">{{ row.transactionDate | date:'dd MMM yyyy'
+                                            }}</td>
+                                    </ng-container>
+                                    <ng-container matColumnDef="description">
+                                        <th mat-header-cell *matHeaderCellDef>Description</th>
+                                        <td mat-cell *matCellDef="let row" class="description-cell">{{ row.description
+                                            }}</td>
+                                    </ng-container>
+                                    <ng-container matColumnDef="amountRaw">
+                                        <th mat-header-cell *matHeaderCellDef class="amount-header">Amount</th>
+                                        <td mat-cell *matCellDef="let row" class="amount-cell"
+                                            [class.inflow]="row.amountRaw > 0" [class.outflow]="row.amountRaw < 0">
+                                            {{ formatAmount(row.amountRaw) }}
+                                        </td>
+                                    </ng-container>
+                                    <ng-container matColumnDef="counterAccount">
+                                        <th mat-header-cell *matHeaderCellDef>Counter Account</th>
+                                        <td mat-cell *matCellDef="let row">{{ row.counterAccountName || '—' }}</td>
+                                    </ng-container>
+                                    <ng-container matColumnDef="status">
+                                        <th mat-header-cell *matHeaderCellDef>Status</th>
+                                        <td mat-cell *matCellDef="let row"><span
+                                                class="status-badge duplicate">Duplicate</span></td>
+                                    </ng-container>
+                                    <ng-container matColumnDef="actions">
+                                        <th mat-header-cell *matHeaderCellDef></th>
+                                        <td mat-cell *matCellDef="let row">
+                                            <button mat-icon-button matTooltip="Force Import" (click)="forceImport(row)"
+                                                color="primary">
+                                                <mat-icon>add_task</mat-icon>
+                                            </button>
+                                        </td>
+                                    </ng-container>
+                                    <tr mat-header-row *matHeaderRowDef="displayedDuplicateColumns; sticky: true"></tr>
+                                    <tr mat-row *matRowDef="let row; columns: displayedDuplicateColumns;"></tr>
+                                    <tr class="mat-row" *matNoDataRow>
+                                        <td class="mat-cell empty-cell"
+                                            [attr.colspan]="displayedDuplicateColumns.length">
+                                            <mat-icon>check_circle_outline</mat-icon>
+                                            <span>{{ duplicateSearch ? 'No results' : 'No duplicates found' }}</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </mat-tab>
+
+                        <!-- ── Errors Tab ──────────────────────────────────────────── -->
+                        <mat-tab>
+                            <ng-template mat-tab-label>
+                                <mat-icon class="tab-icon error-icon">error_outline</mat-icon>
+                                Errors ({{ reviewData.file.errorRows }})
+                            </ng-template>
+
+                            <div class="tab-search tab-search-row">
+                                <mat-form-field appearance="outline" class="search-field">
+                                    <mat-label>Search by description</mat-label>
+                                    <mat-icon matPrefix>search</mat-icon>
+                                    <input matInput [(ngModel)]="errorSearch"
+                                        (ngModelChange)="applyFilter(errorDataSource, $event)" id="errorSearch">
+                                </mat-form-field>
+                                <button mat-stroked-button color="warn" (click)="downloadErrorsCsv()"
+                                    [disabled]="!reviewData.errorRows.length" id="downloadErrorsCsvBtn">
+                                    <mat-icon>download</mat-icon> Download CSV
+                                </button>
+                            </div>
+
+                            <div class="table-container">
+                                <table mat-table [dataSource]="errorDataSource" class="review-table">
+                                    <ng-container matColumnDef="date">
+                                        <th mat-header-cell *matHeaderCellDef>Date</th>
+                                        <td mat-cell *matCellDef="let row">{{ row.transactionDate ? (row.transactionDate
+                                            | date:'dd MMM yyyy') : '—' }}</td>
+                                    </ng-container>
+                                    <ng-container matColumnDef="description">
+                                        <th mat-header-cell *matHeaderCellDef>Description</th>
+                                        <td mat-cell *matCellDef="let row" class="description-cell">{{ row.description
+                                            || '—' }}</td>
+                                    </ng-container>
+                                    <ng-container matColumnDef="amountRaw">
+                                        <th mat-header-cell *matHeaderCellDef class="amount-header">Amount</th>
+                                        <td mat-cell *matCellDef="let row">{{ row.amountRaw ?
+                                            formatAmount(row.amountRaw) : '—' }}</td>
+                                    </ng-container>
+                                    <ng-container matColumnDef="errorReason">
+                                        <th mat-header-cell *matHeaderCellDef>Error Reason</th>
+                                        <td mat-cell *matCellDef="let row" class="error-reason">{{ row.errorReason }}
+                                        </td>
+                                    </ng-container>
+                                    <tr mat-header-row *matHeaderRowDef="displayedErrorColumns; sticky: true"></tr>
+                                    <tr mat-row *matRowDef="let row; columns: displayedErrorColumns;"></tr>
+                                    <tr class="mat-row" *matNoDataRow>
+                                        <td class="mat-cell empty-cell" [attr.colspan]="displayedErrorColumns.length">
+                                            <mat-icon>check_circle_outline</mat-icon>
+                                            <span>{{ errorSearch ? 'No results' : 'No errors found' }}</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </mat-tab>
+
+                    </mat-tab-group>
+                </ng-container>
+
+                <!-- Step Actions -->
+                <div class="step-actions" *ngIf="reviewData">
+                    <button mat-button matStepperPrevious id="backToUploadBtn">
+                        <mat-icon>arrow_back</mat-icon> Back
+                    </button>
+                    <!-- All already imported: just show close -->
+                    <button *ngIf="isAllAlreadyImported" mat-raised-button (click)="onCancelAttempt()"
+                        id="closeAlreadyImportedBtn">
+                        <mat-icon>close</mat-icon> Close
+                    </button>
+                    <!-- Normal flow: proceed to confirm -->
+                    <button *ngIf="!isAllAlreadyImported" mat-raised-button color="primary"
+                        [disabled]="reviewData.file.validRows === 0" (click)="stepper.next()" id="proceedToConfirmBtn">
+                        Review {{ reviewData.file.validRows }} Valid Transactions
+                        <mat-icon>arrow_forward</mat-icon>
+                    </button>
+                </div>
+
+            </div>
+        </mat-step>
+
+        <!-- ─────────────────────────────────────────────────────────────────── -->
+        <!-- STEP 3: Confirm & Commit                                             -->
+        <!-- ─────────────────────────────────────────────────────────────────── -->
+        <mat-step>
+            <ng-template matStepLabel>Confirm</ng-template>
+
+            <div class="step-content confirm-step">
+                <mat-card class="confirm-card" *ngIf="reviewData">
+                    <mat-card-header>
+                        <mat-icon mat-card-avatar class="confirm-icon">fact_check</mat-icon>
+                        <mat-card-title>Ready to Import</mat-card-title>
+                        <mat-card-subtitle>Review the summary and confirm to commit transactions</mat-card-subtitle>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <div class="confirm-summary">
+                            <div class="confirm-row">
+                                <span class="confirm-label">File</span>
+                                <span>{{ reviewData.file.originalFilename }}</span>
+                            </div>
+                            <div class="confirm-row">
+                                <span class="confirm-label">Target Account</span>
+                                <span>{{ reviewData.file.accountName }}</span>
+                            </div>
+                            <mat-divider></mat-divider>
+                            <div class="confirm-row">
+                                <span class="confirm-label">Transactions to import</span>
+                                <strong class="valid-count">{{ reviewData.file.validRows }}</strong>
+                            </div>
+                            <div class="confirm-row" *ngIf="reviewData.file.alreadyImportedRows > 0">
+                                <span class="confirm-label">Already imported (skipped)</span>
+                                <span class="already-count">{{ reviewData.file.alreadyImportedRows }}</span>
+                            </div>
+                            <div class="confirm-row" *ngIf="reviewData.file.duplicateRows > 0">
+                                <span class="confirm-label">Duplicates (skipped)</span>
+                                <span class="duplicate-count">{{ reviewData.file.duplicateRows }}</span>
+                            </div>
+                            <div class="confirm-row" *ngIf="reviewData.file.errorRows > 0">
+                                <span class="confirm-label">Errors (skipped)</span>
+                                <span class="error-count">{{ reviewData.file.errorRows }}</span>
+                            </div>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+
+                <div class="step-actions" *ngIf="reviewData">
+                    <button mat-button matStepperPrevious [disabled]="committing" id="backToReviewBtn">
+                        <mat-icon>arrow_back</mat-icon> Back
+                    </button>
+                    <button mat-raised-button color="primary" [disabled]="reviewData.file.validRows === 0 || committing"
+                        (click)="commit()" id="commitImportBtn">
+                        <mat-spinner *ngIf="committing" diameter="18" class="btn-spinner"></mat-spinner>
+                        <mat-icon *ngIf="!committing">save</mat-icon>
+                        {{ committing ? 'Importing...' : 'Confirm Import' }}
+                    </button>
+                </div>
+            </div>
+        </mat-step>
+
+    </mat-stepper>
+</mat-dialog-content>

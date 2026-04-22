@@ -1,0 +1,92 @@
+<h2 mat-dialog-title class="dialog-title d-flex align-items-center gap-2 text-danger">
+  <mat-icon>warning</mat-icon>
+  Delete Account
+</h2>
+
+<mat-dialog-content class="dialog-content">
+
+  @if (loading) {
+  <div class="d-flex justify-content-center py-4">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+  }
+
+  @else if (error) {
+  <div class="alert alert-danger">
+    {{ error }}
+  </div>
+  }
+
+  @else if (impact) {
+
+  <!-- Account name -->
+  <div class="account-info mb-4">
+    <div class="account-label">Account</div>
+    <div class="account-name">
+      {{ data?.accountName }}
+    </div>
+  </div>
+
+  <!-- Warning -->
+  <p class="warning-text">
+    This action will permanently delete this account and its related data.
+    <strong>This cannot be undone.</strong>
+  </p>
+
+  <!-- Impact Card -->
+  <div class="impact-card">
+
+    <div class="impact-title">
+      The following data will be removed
+    </div>
+
+    <div class="impact-list">
+
+      <div class="impact-item">
+        <mat-icon>receipt</mat-icon>
+        <span><strong>{{ impact.transactionCount }}</strong> transactions</span>
+      </div>
+
+      <div class="impact-item">
+        <mat-icon>trending_up</mat-icon>
+        <span><strong>{{ impact.valuationCount }}</strong> valuations</span>
+      </div>
+
+      <div class="impact-item">
+        <mat-icon>pie_chart</mat-icon>
+        <span><strong>{{ impact.positionCount }}</strong> positions</span>
+      </div>
+
+      @if (impact.hasDepreciationSchedule) {
+      <div class="impact-item">
+        <mat-icon>schedule</mat-icon>
+        <span><strong>1</strong> depreciation schedule</span>
+      </div>
+      }
+
+    </div>
+
+  </div>
+
+  <!-- Extra note -->
+  <div class="impact-note">
+    <mat-icon>info</mat-icon>
+    Transactions transferred between this account and other accounts
+    will be deleted entirely from both sides.
+  </div>
+
+  }
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="dialog-actions">
+
+  <button mat-button mat-dialog-close>
+    Cancel
+  </button>
+
+  <button mat-flat-button color="warn" [disabled]="deleteDisabled" (click)="confirm()">
+    Delete Account
+  </button>
+
+</mat-dialog-actions>

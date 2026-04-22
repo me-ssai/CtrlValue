@@ -1,0 +1,210 @@
+<div class="loan-form-wrap">
+
+    <!-- Loading skeleton -->
+    <div class="loan-loading" *ngIf="loading">
+        <mat-spinner diameter="28"></mat-spinner>
+        <span>Loading loan details...</span>
+    </div>
+
+    <ng-container *ngIf="!loading">
+
+        <!-- Header bar -->
+        <div class="loan-header">
+            <div class="loan-header-title">
+                <mat-icon>home</mat-icon>
+                <span>{{ isNew ? 'Set Up Loan Details' : 'Loan Details' }}</span>
+            </div>
+            <span class="loan-badge" *ngIf="!isNew">
+                {{ loan?.interestRate! * 100 | number:'1.2-2' }}% {{ loan?.rateType }}
+            </span>
+        </div>
+
+        <!-- Main form -->
+        <form [formGroup]="loanForm" (ngSubmit)="save()" novalidate>
+
+            <!-- Principal & Rate -->
+            <div class="section-label">Loan Parameters</div>
+            <div class="form-grid">
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Original Loan Amount</mat-label>
+                    <input matInput type="number" formControlName="loanAmount" step="1000" min="0" id="loanAmount" />
+                    <mat-icon matPrefix>attach_money</mat-icon>
+                    <mat-error *ngIf="loanForm.get('loanAmount')?.hasError('required')">Required</mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Interest Rate (%)</mat-label>
+                    <input matInput type="number" formControlName="interestRate" step="0.01" min="0" max="100" id="loanInterestRate" />
+                    <mat-icon matSuffix>percent</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Rate Type</mat-label>
+                    <mat-select formControlName="rateType" id="loanRateType">
+                        <mat-option *ngFor="let t of rateTypes" [value]="t">{{ t }}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" *ngIf="isFixedRate">
+                    <mat-label>Fixed Rate Expiry Date</mat-label>
+                    <input matInput [matDatepicker]="fixedExpPicker" formControlName="fixedRateExpiresAt" id="fixedRateExpiresAt" />
+                    <mat-datepicker-toggle matIconSuffix [for]="fixedExpPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #fixedExpPicker></mat-datepicker>
+                </mat-form-field>
+
+            </div>
+
+            <!-- Schedule -->
+            <div class="section-label">Repayment Schedule</div>
+            <div class="form-grid">
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Payment Frequency</mat-label>
+                    <mat-select formControlName="paymentFrequency" id="paymentFrequency">
+                        <mat-option *ngFor="let f of frequencies" [value]="f">{{ f }}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Repayment Amount</mat-label>
+                    <input matInput type="number" formControlName="repaymentAmount" step="10" min="0" id="repaymentAmount" />
+                    <mat-icon matPrefix>payments</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Loan Term (Years)</mat-label>
+                    <input matInput type="number" formControlName="loanTermYears" min="1" max="40" id="loanTermYears" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Extra Months</mat-label>
+                    <input matInput type="number" formControlName="loanTermMonths" min="0" max="11" id="loanTermMonths" />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Loan Start Date</mat-label>
+                    <input matInput [matDatepicker]="startDatePicker" formControlName="startDate" id="loanStartDate" />
+                    <mat-datepicker-toggle matIconSuffix [for]="startDatePicker"></mat-datepicker-toggle>
+                    <mat-datepicker #startDatePicker></mat-datepicker>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" *ngIf="!isNew">
+                    <mat-label>Next Payment Date</mat-label>
+                    <input matInput [matDatepicker]="nextPayPicker" formControlName="nextPaymentDate" id="nextPaymentDate" />
+                    <mat-datepicker-toggle matIconSuffix [for]="nextPayPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #nextPayPicker></mat-datepicker>
+                </mat-form-field>
+
+                <div class="checkbox-field">
+                    <mat-checkbox formControlName="isInterestOnly" color="primary" id="isInterestOnly">
+                        Interest Only Loan
+                    </mat-checkbox>
+                    <span class="field-hint">No principal reduction during interest-only period</span>
+                </div>
+
+            </div>
+
+            <!-- Linked Accounts -->
+            <div class="section-label">Linked Accounts</div>
+            <div class="form-grid">
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Property Account</mat-label>
+                    <mat-select formControlName="propertyAccountId" id="propertyAccountId">
+                        <mat-option [value]="null">— None —</mat-option>
+                        <mat-option *ngFor="let a of propertyAccounts" [value]="a.id">
+                            {{ a.name }} ({{ a.institution || 'No institution' }})
+                        </mat-option>
+                    </mat-select>
+                    <mat-hint>Used for LVR calculation</mat-hint>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Offset Account</mat-label>
+                    <mat-select formControlName="offsetAccountId" id="offsetAccountId">
+                        <mat-option [value]="null">— None —</mat-option>
+                        <mat-option *ngFor="let a of offsetAccounts" [value]="a.id">
+                            {{ a.name }} ({{ a.institution || 'No institution' }})
+                        </mat-option>
+                    </mat-select>
+                    <mat-hint>Reduces effective balance used for interest</mat-hint>
+                </mat-form-field>
+
+            </div>
+
+            <!-- Notes -->
+            <mat-form-field appearance="outline" class="full-width" style="margin-top:0.5rem">
+                <mat-label>Notes</mat-label>
+                <textarea matInput formControlName="notes" rows="2" id="loanNotes"></textarea>
+            </mat-form-field>
+
+            <!-- Save Button -->
+            <div class="form-actions">
+                <button mat-raised-button color="primary" type="submit" [disabled]="saving" id="saveLoanBtn">
+                    <mat-spinner *ngIf="saving" diameter="18" class="btn-spinner"></mat-spinner>
+                    <mat-icon *ngIf="!saving">save</mat-icon>
+                    {{ saving ? 'Saving...' : (isNew ? 'Create Loan Details' : 'Save Changes') }}
+                </button>
+            </div>
+
+        </form>
+
+        <!-- Rate History (only shown once loan exists) -->
+        <ng-container *ngIf="!isNew && loan">
+            <mat-divider style="margin: 1.5rem 0"></mat-divider>
+
+            <div class="section-label" style="margin-bottom:0.75rem">
+                Rate History
+                <button mat-stroked-button (click)="showRateChangeForm = !showRateChangeForm"
+                    style="margin-left:1rem; font-size:0.8rem" id="addRateChangeBtn">
+                    <mat-icon>add</mat-icon> Add Rate Change
+                </button>
+            </div>
+
+            <!-- Rate change entry form -->
+            <div class="rate-change-form" *ngIf="showRateChangeForm" [formGroup]="rateChangeForm">
+                <div class="form-grid">
+                    <mat-form-field appearance="outline">
+                        <mat-label>New Rate (%)</mat-label>
+                        <input matInput type="number" formControlName="rate" step="0.01" min="0" max="100" id="newRate" />
+                        <mat-icon matSuffix>percent</mat-icon>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline">
+                        <mat-label>Effective From</mat-label>
+                        <input matInput [matDatepicker]="rateEffPicker" formControlName="effectiveFrom" id="rateEffectiveFrom" />
+                        <mat-datepicker-toggle matIconSuffix [for]="rateEffPicker"></mat-datepicker-toggle>
+                        <mat-datepicker #rateEffPicker></mat-datepicker>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Notes (e.g. "RBA rate cut")</mat-label>
+                        <input matInput formControlName="notes" id="rateNotes" />
+                    </mat-form-field>
+                </div>
+                <div class="form-actions">
+                    <button mat-raised-button color="accent" (click)="submitRateChange()" [disabled]="addingRate" id="submitRateChangeBtn">
+                        <mat-spinner *ngIf="addingRate" diameter="16" class="btn-spinner"></mat-spinner>
+                        <mat-icon *ngIf="!addingRate">check</mat-icon>
+                        {{ addingRate ? 'Saving...' : 'Record Rate Change' }}
+                    </button>
+                    <button mat-button (click)="showRateChangeForm = false">Cancel</button>
+                </div>
+            </div>
+
+            <!-- Rate history timeline -->
+            <div class="rate-timeline">
+                <div class="rate-item" *ngFor="let r of loan?.rateHistory; let isFirst = first">
+                    <div class="rate-dot" [class.active]="isFirst"></div>
+                    <div class="rate-info">
+                        <span class="rate-val">{{ formatRate(r.rate!) }}</span>
+                        <span class="rate-date">Effective {{ r.effectiveFrom | date:'dd MMM yyyy' }}</span>
+                        <span class="rate-note" *ngIf="r.notes">{{ r.notes }}</span>
+                    </div>
+                    <span class="rate-chip current" *ngIf="isFirst">Current</span>
+                </div>
+                <div class="no-history" *ngIf="!loan?.rateHistory?.length">No rate changes recorded.</div>
+            </div>
+        </ng-container>
+
+    </ng-container>
+</div>

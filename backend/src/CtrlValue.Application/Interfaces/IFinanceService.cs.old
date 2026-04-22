@@ -1,0 +1,27 @@
+using ProjectZ.Application.DTOs;
+
+namespace ProjectZ.Application.Interfaces;
+
+public interface IFinanceService
+{
+    // ── Assets ──
+    Task<List<AssetDto>> GetAssetsAsync(Guid userId);
+    Task<AssetDto> GetAssetByIdAsync(Guid id, Guid userId);
+    Task<AssetDto> CreateAssetAsync(CreateAssetRequest request, Guid userId);
+    Task<AssetDto> UpdateAssetAsync(Guid id, UpdateAssetRequest request, Guid userId);
+    Task DeleteAssetAsync(Guid id, Guid userId);
+
+    // ── Liabilities ──
+    Task<List<LiabilityDto>> GetLiabilitiesAsync(Guid userId);
+    Task<LiabilityDto> GetLiabilityByIdAsync(Guid id, Guid userId);
+    Task<LiabilityDto> CreateLiabilityAsync(CreateLiabilityRequest request, Guid userId);
+    Task<LiabilityDto> UpdateLiabilityAsync(Guid id, UpdateLiabilityRequest request, Guid userId);
+    Task DeleteLiabilityAsync(Guid id, Guid userId);
+
+    // ── Transactions ──
+    Task<List<TransactionDto>> GetTransactionsAsync(Guid userId, DateTime? startDate = null, DateTime? endDate = null);
+    Task<TransactionDto> GetTransactionByIdAsync(Guid id, Guid userId);
+    Task<TransactionDto> CreateTransactionAsync(CreateTransactionRequest request, Guid userId);
+    Task<TransactionDto> UpdateTransactionAsync(Guid id, UpdateTransactionRequest request, Guid userId);
+    Task DeleteTransactionAsync(Guid id, Guid userId);
+}

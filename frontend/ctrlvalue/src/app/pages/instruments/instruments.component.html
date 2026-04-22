@@ -1,0 +1,87 @@
+<div class="page-container">
+    <div class="page-header" *ngIf="showHeader">
+        <h1><mat-icon>show_chart</mat-icon> Instruments</h1>
+        <button mat-raised-button color="primary" (click)="createInstrument()">
+            <mat-icon>add</mat-icon>
+            New Instrument
+        </button>
+    </div>
+
+    <mat-form-field appearance="outline" class="w-100 mb-3">
+        <mat-label>Filter Instruments</mat-label>
+        <input matInput (keyup)="applyFilter($event)" placeholder="Ex. AAPL, Gold, Bitcoin" #input>
+        <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <div class="table-container">
+        <table mat-table [dataSource]="dataSource" matSort class="w-100">
+
+            <!-- Symbol Column -->
+            <ng-container matColumnDef="symbol">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Symbol </th>
+                <td mat-cell *matCellDef="let row"> <strong>{{row.symbol}}</strong> </td>
+            </ng-container>
+
+            <!-- Name Column -->
+            <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Name </th>
+                <td mat-cell *matCellDef="let row"> {{row.name}} </td>
+            </ng-container>
+
+            <!-- Type Column -->
+            <ng-container matColumnDef="type">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Type </th>
+                <td mat-cell *matCellDef="let row">
+                    <mat-chip-set>
+                        <mat-chip [class]="'type-chip ' + row.instrumentType.toLowerCase()">
+                            {{row.instrumentType}}
+                        </mat-chip>
+                    </mat-chip-set>
+                </td>
+            </ng-container>
+
+            <!-- Currency Column -->
+            <ng-container matColumnDef="currency">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Currency </th>
+                <td mat-cell *matCellDef="let row"> {{row.currency}} </td>
+            </ng-container>
+
+            <!-- Exchange Column -->
+            <ng-container matColumnDef="exchange">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Exchange </th>
+                <td mat-cell *matCellDef="let row" class="text-muted"> {{row.exchange || '-'}} </td>
+            </ng-container>
+
+            <!-- Latest Price Column -->
+            <ng-container matColumnDef="latestPrice">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Latest Price </th>
+                <td mat-cell *matCellDef="let row" class="fw-semibold">
+                    {{row.latestPrice ? (row.latestPrice | currency:row.currency) : '-'}}
+                </td>
+            </ng-container>
+
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef> Actions </th>
+                <td mat-cell *matCellDef="let row" class="actions-cell">
+                    <button mat-icon-button color="primary" (click)="editInstrument(row.id)" matTooltip="Edit">
+                        <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="deleteInstrument(row.id)" matTooltip="Delete">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+            <!-- Row shown when there is no matching data. -->
+            <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell empty-state" colspan="4">No data matching the filter "{{input.value}}"</td>
+            </tr>
+        </table>
+
+        <mat-paginator [pageSizeOptions]="[10, 25, 100]" aria-label="Select page of instruments"></mat-paginator>
+    </div>
+</div>

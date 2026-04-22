@@ -1,0 +1,30 @@
+// Position-specific styles only
+.instrument-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    .instrument-name {
+        font-size: var(--font-size-xs);
+        color: var(--color-text-muted);
+    }
+}
+
+.subtitle {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+}
+
+.gain {
+    color: var(--color-accent-success);
+    font-weight: 600;
+}
+
+.loss {
+    color: var(--color-accent-danger);
+    font-weight: 600;
+}
+
+.actions-cell {
+    white-space: nowrap;
+}

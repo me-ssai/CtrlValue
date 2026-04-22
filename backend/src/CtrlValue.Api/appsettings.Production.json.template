@@ -1,0 +1,28 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Warning",
+      "Microsoft.AspNetCore": "Warning",
+      "Microsoft.EntityFrameworkCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "ConnectionStrings": {
+    "DefaultConnection": "#{ConnectionStrings__DefaultConnection}#"
+  },
+  "Jwt": {
+    "Secret":        "#{Jwt__Secret}#",
+    "Issuer":        "ProjectZ.Api",
+    "Audience":      "ProjectZ.Client",
+    "ExpiryMinutes": 60
+  },
+  "Email": {
+    "AcsConnectionString":  "#{Email__AcsConnectionString}#",
+    "FromAddress":          "DoNotReply@#{Email__AcsDomain}#.azurecomm.net",
+    "FromName":             "Project Z",
+    "FrontendBaseUrl":      "https://{tenant}.ctrlvalue.com"
+  },
+  "Cors": {
+    "AllowedOrigins": [ "#{Cors__AllowedOrigins}#" ]
+  }
+}

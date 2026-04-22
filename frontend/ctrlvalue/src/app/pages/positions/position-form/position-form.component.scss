@@ -1,0 +1,47 @@
+.page-container {
+    background: var(--color-bg-card);
+    display: flex;
+    justify-content: center;
+}
+
+.form-container {
+    width: 100%;
+    max-width: 800px;
+}
+
+mat-card-header {
+    margin-bottom: 24px;
+}
+
+mat-card-content {
+    padding-bottom: 16px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-row {
+    display: flex;
+    gap: 16px;
+
+    mat-form-field {
+        color: var(--color-accent-primary);
+    }
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+@media (max-width: 600px) {
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+}

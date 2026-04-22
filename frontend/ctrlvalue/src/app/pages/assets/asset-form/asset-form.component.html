@@ -1,0 +1,59 @@
+<h2 mat-dialog-title>
+    <mat-icon>account_balance_wallet</mat-icon>
+    {{ isEditMode ? 'Edit Asset' : 'Add Asset' }}
+</h2>
+
+<mat-dialog-content>
+    <form [formGroup]="assetForm" (ngSubmit)="onSubmit()" class="dialog-form">
+        <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Asset Name</mat-label>
+            <input matInput formControlName="name" placeholder="e.g., Savings Account, Investment Portfolio" required>
+            <mat-icon matPrefix>label</mat-icon>
+            <mat-error *ngIf="assetForm.get('name')?.hasError('required')">Asset name is required</mat-error>
+        </mat-form-field>
+
+        <div class="row g-3">
+            <div class="col-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Category</mat-label>
+                    <mat-select formControlName="category">
+                        <mat-option *ngFor="let cat of categories" [value]="cat">{{ cat }}</mat-option>
+                    </mat-select>
+                    <mat-icon matPrefix>category</mat-icon>
+                </mat-form-field>
+            </div>
+            <div class="col-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Currency</mat-label>
+                    <input matInput formControlName="currency" maxlength="3" required>
+                    <mat-icon matPrefix>attach_money</mat-icon>
+                </mat-form-field>
+            </div>
+        </div>
+
+        <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Current Value</mat-label>
+            <input matInput type="number" formControlName="currentValue" step="0.01" min="0" placeholder="0.00"
+                required>
+            <mat-icon matPrefix>payments</mat-icon>
+            <mat-error *ngIf="assetForm.get('currentValue')?.hasError('required')">Value is required</mat-error>
+            <mat-error *ngIf="assetForm.get('currentValue')?.hasError('min')">Value must be positive</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" rows="3"
+                placeholder="Optional notes about this asset"></textarea>
+            <mat-icon matPrefix>notes</mat-icon>
+        </mat-form-field>
+    </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button (click)="cancel()" [disabled]="loading">Cancel</button>
+    <button mat-raised-button color="primary" [disabled]="loading || assetForm.invalid" (click)="onSubmit()">
+        <mat-icon *ngIf="loading">refresh</mat-icon>
+        <mat-icon *ngIf="!loading">save</mat-icon>
+        {{ isEditMode ? 'Update Asset' : 'Create Asset' }}
+    </button>
+</mat-dialog-actions>

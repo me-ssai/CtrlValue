@@ -1,0 +1,275 @@
+<div class="integrations-container">
+
+  <!-- ── Bank Connections ────────────────────────────────────────────── -->
+  <mat-card class="integration-card banking-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>account_balance</mat-icon>
+        Bank Connections
+        <!-- Health badge — only shown when at least one connection needs attention -->
+        <span *ngIf="hasConnectionsNeedingAttention"
+              class="attention-badge"
+              [matTooltip]="attentionCount + ' connection(s) need attention'">
+          {{ attentionCount }}
+        </span>
+      </mat-card-title>
+      <mat-card-subtitle>
+        Securely sync your bank accounts, balances, and transactions.
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+
+      <!-- Loading state -->
+      <div *ngIf="connectionsLoading && connections.length === 0" class="loading-row">
+        <mat-spinner diameter="24"></mat-spinner>
+        <span>Loading connections…</span>
+      </div>
+
+      <!-- Empty state -->
+      <div *ngIf="!connectionsLoading && connections.length === 0" class="empty-state">
+        <mat-icon class="empty-icon">account_balance</mat-icon>
+        <p>No banks connected yet.</p>
+        <p class="empty-hint">Click <strong>Connect Bank</strong> to securely link your first account.</p>
+      </div>
+
+      <!-- Connections list -->
+      <div class="connections-list" *ngIf="connections.length > 0">
+        <div class="connection-item" *ngFor="let conn of connections">
+
+          <div class="connection-header">
+            <div class="connection-info">
+
+              <!-- Institution logo or fallback icon -->
+              <div class="institution-logo-wrap">
+                <img *ngIf="conn.institutionLogoUrl"
+                     [src]="conn.institutionLogoUrl.startsWith('data:') ? conn.institutionLogoUrl : 'data:image/png;base64,' + conn.institutionLogoUrl"
+                     class="institution-logo" alt="" />
+                <mat-icon *ngIf="!conn.institutionLogoUrl" class="institution-icon">account_balance</mat-icon>
+              </div>
+
+              <div class="institution-details">
+                <div class="institution-name">{{ conn.institutionName }}</div>
+                <div class="connection-meta">
+
+                  <!-- Status chip -->
+                  <span class="status-chip" [ngClass]="getStatusChipClass(conn.status)">
+                    {{ conn.status }}
+                  </span>
+
+                  <span class="account-count">
+                    {{ conn.accountCount }} account{{ conn.accountCount !== 1 ? 's' : '' }}
+                  </span>
+
+                  <span class="last-synced" *ngIf="conn.lastSyncedAt">
+                    Synced {{ conn.lastSyncedAt | date:'d MMM, h:mm a' }}
+                  </span>
+
+                  <span class="never-synced" *ngIf="!conn.lastSyncedAt">
+                    Never synced
+                  </span>
+                </div>
+
+                <!-- Connection health message (NeedsReauth / Error) -->
+                <div class="health-message" *ngIf="conn.statusMessage && conn.status !== 'Active'">
+                  <mat-icon [ngClass]="getHealthIconClass(healthForConnection(conn.id)?.healthStatus || 'Error')">
+                    {{ getHealthIcon(healthForConnection(conn.id)?.healthStatus || 'Error') }}
+                  </mat-icon>
+                  <span>{{ conn.statusMessage }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="connection-actions">
+              <button mat-stroked-button color="primary"
+                      (click)="syncConnection(conn.id)"
+                      [disabled]="syncing[conn.id]"
+                      [matTooltip]="'Sync ' + conn.institutionName">
+                <mat-spinner *ngIf="syncing[conn.id]" diameter="16"></mat-spinner>
+                <mat-icon *ngIf="!syncing[conn.id]">sync</mat-icon>
+                Sync
+              </button>
+              <button mat-icon-button color="warn"
+                      matTooltip="Disconnect"
+                      (click)="removeConnection(conn.id, conn.institutionName)">
+                <mat-icon>link_off</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <!-- Accounts for this connection -->
+          <div class="connected-accounts"
+               *ngIf="accountsForConnection(conn.id).length > 0">
+            <mat-divider></mat-divider>
+            <div class="connected-account-row"
+                 *ngFor="let acc of accountsForConnection(conn.id)">
+
+              <div class="acc-info">
+                <span class="acc-name">{{ acc.name }}</span>
+                <span class="acc-mask" *ngIf="acc.mask">••{{ acc.mask }}</span>
+                <span class="acc-type-chip">{{ acc.subtype || acc.type }}</span>
+              </div>
+
+              <div class="acc-balance">
+                {{ formatBalance(acc.currentBalance, acc.currencyCode) }}
+              </div>
+
+              <div class="acc-link">
+                <!-- Already linked -->
+                <span *ngIf="acc.linkedAccountId" class="linked-label">
+                  <mat-icon class="linked-icon">link</mat-icon>
+                  {{ getLinkedAccountName(acc.linkedAccountId) }}
+                </span>
+
+                <!-- Link button -->
+                <button *ngIf="!acc.linkedAccountId && linkingAccountId !== acc.id"
+                        mat-stroked-button
+                        (click)="startLinkAccount(acc.id)">
+                  <mat-icon>link</mat-icon>
+                  Link account
+                </button>
+
+                <!-- Inline link form -->
+                <div class="link-form" *ngIf="linkingAccountId === acc.id">
+                  <mat-form-field appearance="outline" class="link-select">
+                    <mat-label>Select system account</mat-label>
+                    <mat-select [(ngModel)]="selectedSystemAccountId">
+                      <mat-option *ngFor="let sa of systemAccounts" [value]="accountId(sa)">
+                        {{ accountName(sa) }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                  <button mat-flat-button color="primary"
+                          (click)="confirmLinkAccount()"
+                          [disabled]="!selectedSystemAccountId">
+                    Confirm
+                  </button>
+                  <button mat-button (click)="cancelLinkAccount()">Cancel</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /.connection-item -->
+      </div><!-- /.connections-list -->
+
+    </mat-card-content>
+
+    <mat-card-actions class="banking-actions">
+      <button id="connect-bank-btn"
+              mat-flat-button color="primary"
+              (click)="connectBank()"
+              [disabled]="connectionsLoading">
+        <mat-spinner *ngIf="connectionsLoading" diameter="16"></mat-spinner>
+        <mat-icon *ngIf="!connectionsLoading">add</mat-icon>
+        Connect Bank
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <!-- ── Alpha Vantage (Stock Prices) ──────────────────────────────── -->
+  <mat-card class="integration-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>trending_up</mat-icon>
+        Stock Prices
+      </mat-card-title>
+      <mat-card-subtitle>
+        Alpha Vantage — live stock and ETF quotes. Free tier: 25 calls/day.
+        <a href="https://www.alphavantage.co/support/#api-key" target="_blank" rel="noopener">Get a free API key</a>
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div class="integration-status" *ngIf="getIntegration('ALPHA_VANTAGE') as integration">
+        <mat-chip [color]="integration.isEnabled ? 'primary' : undefined" selected>
+          {{ integration.isEnabled ? 'Enabled' : 'Disabled' }}
+        </mat-chip>
+        <span class="key-status">
+          <mat-icon>{{ integration.hasApiKey ? 'vpn_key' : 'vpn_key_off' }}</mat-icon>
+          {{ integration.hasApiKey ? 'API key stored' : 'No API key — using platform default' }}
+        </span>
+        <span class="last-synced" *ngIf="integration.lastSyncedAt">
+          Last synced {{ integration.lastSyncedAt | date:'short' }}
+        </span>
+      </div>
+
+      <mat-form-field appearance="outline" class="api-key-field">
+        <mat-label>API Key</mat-label>
+        <input matInput [type]="avShowKey ? 'text' : 'password'"
+               [(ngModel)]="avApiKey"
+               placeholder="Enter to update key" />
+        <button matSuffix mat-icon-button (click)="avShowKey = !avShowKey">
+          <mat-icon>{{ avShowKey ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+      </mat-form-field>
+
+      <mat-slide-toggle [(ngModel)]="avEnabled" color="primary">
+        Enable Alpha Vantage price fetching
+      </mat-slide-toggle>
+    </mat-card-content>
+
+    <mat-card-actions>
+      <button mat-flat-button color="primary"
+              (click)="saveAlphaVantage()"
+              [disabled]="avSaving">
+        <mat-spinner *ngIf="avSaving" diameter="16"></mat-spinner>
+        Save
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <!-- ── Metals API (Spot Prices) ───────────────────────────────────── -->
+  <mat-card class="integration-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>diamond</mat-icon>
+        Metals Spot Prices
+      </mat-card-title>
+      <mat-card-subtitle>
+        metals-api.com — gold (XAU), silver (XAG), platinum (XPT), palladium (XPD). Free tier: 50 calls/month.
+        <a href="https://metals-api.com/register" target="_blank" rel="noopener">Get a free API key</a>
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div class="integration-status" *ngIf="getIntegration('METALS_API') as integration">
+        <mat-chip [color]="integration.isEnabled ? 'primary' : undefined" selected>
+          {{ integration.isEnabled ? 'Enabled' : 'Disabled' }}
+        </mat-chip>
+        <span class="key-status">
+          <mat-icon>{{ integration.hasApiKey ? 'vpn_key' : 'vpn_key_off' }}</mat-icon>
+          {{ integration.hasApiKey ? 'API key stored' : 'No API key — using platform default' }}
+        </span>
+        <span class="last-synced" *ngIf="integration.lastSyncedAt">
+          Last synced {{ integration.lastSyncedAt | date:'short' }}
+        </span>
+      </div>
+
+      <mat-form-field appearance="outline" class="api-key-field">
+        <mat-label>API Key</mat-label>
+        <input matInput [type]="metalsShowKey ? 'text' : 'password'"
+               [(ngModel)]="metalsApiKey"
+               placeholder="Enter to update key" />
+        <button matSuffix mat-icon-button (click)="metalsShowKey = !metalsShowKey">
+          <mat-icon>{{ metalsShowKey ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+      </mat-form-field>
+
+      <mat-slide-toggle [(ngModel)]="metalsEnabled" color="primary">
+        Enable metals spot price fetching
+      </mat-slide-toggle>
+    </mat-card-content>
+
+    <mat-card-actions>
+      <button mat-flat-button color="primary"
+              (click)="saveMetalsApi()"
+              [disabled]="metalsSaving">
+        <mat-spinner *ngIf="metalsSaving" diameter="16"></mat-spinner>
+        Save
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+</div>

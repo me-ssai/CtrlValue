@@ -1,0 +1,63 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1><mat-icon>account_balance_wallet</mat-icon> Assets</h1>
+    <button mat-raised-button color="primary" (click)="createAsset()">
+      <mat-icon>add</mat-icon> Add Asset
+    </button>
+  </div>
+
+  <mat-card class="mb-4" *ngIf="!loading && assets.length > 0">
+    <mat-card-content>
+      <div class="d-flex align-items-center justify-content-between">
+        <span class="text-muted">Total Assets</span>
+        <span class="total-value">{{ getTotalValue() | currency:'AUD':'symbol':'1.2-2' }}</span>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <div class="loading" *ngIf="loading">
+    <mat-icon>refresh</mat-icon> Loading assets...
+  </div>
+
+  <div class="empty-state" *ngIf="!loading && assets.length === 0 && !error">
+    <mat-icon>account_balance_wallet</mat-icon>
+    <h3>No Assets Yet</h3>
+    <p>Start tracking your wealth by adding your first asset.</p>
+    <button mat-raised-button color="primary" (click)="createAsset()">
+      <mat-icon>add</mat-icon> Add Your First Asset
+    </button>
+  </div>
+
+  <div class="table-container" *ngIf="!loading && assets.length > 0">
+    <table class="w-100">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Category</th>
+          <th>Value</th>
+          <th>Currency</th>
+          <th>Description</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let asset of assets">
+          <td class="asset-name fw-semibold">{{ asset.name }}</td>
+          <td><span class="category-badge">{{ asset.category }}</span></td>
+          <td class="value fw-bold">{{ asset.currentValue | currency:asset.currency:'symbol':'1.2-2' }}</td>
+          <td class="text-muted">{{ asset.currency }}</td>
+          <td class="description text-muted">{{ asset.description || '—' }}</td>
+          <td class="actions-cell">
+            <button mat-icon-button color="primary" *ngIf="asset.id" (click)="editAsset(asset.id!)" matTooltip="Edit">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" *ngIf="asset.id && asset.name"
+              (click)="deleteAsset(asset.id!, asset.name!)" matTooltip="Delete">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,63 @@
+<h2 mat-dialog-title>
+    <mat-icon>category</mat-icon>
+    Add New Category
+</h2>
+
+<mat-dialog-content>
+    <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()" class="dialog-form">
+        <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Category Name</mat-label>
+            <input matInput formControlName="name" placeholder="e.g., Groceries, Salary, Rent" required>
+            <mat-icon matPrefix>label</mat-icon>
+            <mat-error *ngIf="categoryForm.get('name')?.hasError('required')">Category name is required</mat-error>
+        </mat-form-field>
+
+        <div class="row g-3">
+            <div class="col-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Category Type</mat-label>
+                    <mat-select formControlName="categoryType" required>
+                        <mat-option *ngFor="let type of categoryTypes" [value]="type">{{ type }}</mat-option>
+                    </mat-select>
+                    <mat-icon matPrefix>swap_vert</mat-icon>
+                </mat-form-field>
+            </div>
+            <div class="col-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Parent Category</mat-label>
+                    <mat-select formControlName="parentCategoryId">
+                        <mat-option value="">-- None --</mat-option>
+                        <mat-option *ngFor="let cat of parentCategories" [value]="cat.id">{{ cat.name }}</mat-option>
+                    </mat-select>
+                    <mat-icon matPrefix>account_tree</mat-icon>
+                </mat-form-field>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Color</mat-label>
+                    <input matInput type="color" formControlName="color">
+                    <mat-icon matPrefix>palette</mat-icon>
+                </mat-form-field>
+            </div>
+            <div class="col-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Icon</mat-label>
+                    <input matInput formControlName="icon" placeholder="e.g., shopping_cart">
+                    <mat-icon matPrefix>emoji_emotions</mat-icon>
+                </mat-form-field>
+            </div>
+        </div>
+    </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button (click)="cancel()" [disabled]="loading">Cancel</button>
+    <button mat-raised-button color="primary" [disabled]="loading || categoryForm.invalid" (click)="onSubmit()">
+        <mat-icon *ngIf="loading">refresh</mat-icon>
+        <mat-icon *ngIf="!loading">save</mat-icon>
+        Create Category
+    </button>
+</mat-dialog-actions>

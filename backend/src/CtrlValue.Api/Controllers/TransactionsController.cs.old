@@ -1,0 +1,129 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using ProjectZ.Application.DTOs;
+using ProjectZ.Application.Interfaces;
+
+namespace ProjectZ.Api.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+[Authorize]
+public class TransactionsController : ControllerBase
+{
+    private readonly IFinanceService _financeService;
+
+    public TransactionsController(IFinanceService financeService)
+    {
+        _financeService = financeService;
+    }
+
+    /// <summary>
+    /// Get all transactions for the authenticated user with optional date filtering.
+    /// </summary>
+    [HttpGet]
+    [ProducesResponseType(typeof(List<TransactionDto>), 200)]
+    [ProducesResponseType(401)]
+    public async Task<IActionResult> GetTransactions([FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
+    {
+        var userId = GetUserId();
+        var transactions = await _financeService.GetTransactionsAsync(userId, startDate, endDate);
+        return Ok(transactions);
+    }
+
+    /// <summary>
+    /// Get a specific transaction by ID.
+    /// </summary>
+    [HttpGet("{id}")]
+    [ProducesResponseType(typeof(TransactionDto), 200)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(404)]
+    public async Task<IActionResult> GetTransaction(Guid id)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var transaction = await _financeService.GetTransactionByIdAsync(id, userId);
+            return Ok(transaction);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Create a new transaction.
+    /// </summary>
+    [HttpPost]
+    [ProducesResponseType(typeof(TransactionDto), 201)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    public async Task<IActionResult> CreateTransaction([FromBody] CreateTransactionRequest request)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var transaction = await _financeService.CreateTransactionAsync(request, userId);
+            return CreatedAtAction(nameof(GetTransaction), new { id = transaction.Id }, transaction);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Update an existing transaction.
+    /// </summary>
+    [HttpPut("{id}")]
+    [ProducesResponseType(typeof(TransactionDto), 200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(404)]
+    public async Task<IActionResult> UpdateTransaction(Guid id, [FromBody] UpdateTransactionRequest request)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var transaction = await _financeService.UpdateTransactionAsync(id, request, userId);
+            return Ok(transaction);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Delete a transaction (soft delete).
+    /// </summary>
+    [HttpDelete("{id}")]
+    [ProducesResponseType(204)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(404)]
+    public async Task<IActionResult> DeleteTransaction(Guid id)
+    {
+        try
+        {
+            var userId = GetUserId();
+            await _financeService.DeleteTransactionAsync(id, userId);
+            return NoContent();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+    }
+
+    private Guid GetUserId()
+    {
+        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? throw new UnauthorizedAccessException("User ID not found in token.");
+        return Guid.Parse(claim);
+    }
+}

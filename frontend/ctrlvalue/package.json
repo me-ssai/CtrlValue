@@ -1,0 +1,54 @@
+{
+    "name": "ctrlvalue",
+    "version": "0.0.1",
+    "private": true,
+    "scripts": {
+        "ng": "ng",
+        "start": "ng serve",
+        "build": "ng build",
+        "build:demo": "ng build --configuration=demo",
+        "build:docker": "ng build --configuration=docker",
+        "test": "ng test",
+        "lint": "ng lint",
+        "refresh-api-dev": "nswag run",
+        "refresh-api-prod": "nswag run"
+    },
+    "dependencies": {
+        "@angular/animations": "^19.2.20",
+        "@angular/cdk": "^19.2.19",
+        "@angular/common": "^19.2.20",
+        "@angular/compiler": "^19.2.20",
+        "@angular/core": "^19.2.20",
+        "@angular/forms": "^19.2.20",
+        "@angular/material": "^19.0.0",
+        "@angular/platform-browser": "^19.2.20",
+        "@angular/platform-browser-dynamic": "^19.2.20",
+        "@angular/router": "^19.2.20",
+        "@fortawesome/fontawesome-free": "^6.7.0",
+        "@popperjs/core": "^2.11.8",
+        "bootstrap": "^5.3.8",
+        "chart.js": "^4.5.1",
+        "ng2-charts": "^8.0.0",
+        "rxjs": "~7.8.0",
+        "tslib": "^2.6.0",
+        "zone.js": "~0.15.0"
+    },
+    "devDependencies": {
+        "@angular-devkit/build-angular": "^19.0.0",
+        "@angular/cli": "^19.0.0",
+        "@angular/compiler-cli": "^19.2.20",
+        "@types/jasmine": "^6.0.0",
+        "@types/node": "^25.6.0",
+        "karma-chrome-launcher": "^3.2.0",
+        "karma-coverage": "^2.2.1",
+        "karma-jasmine": "^5.1.0",
+        "karma-jasmine-html-reporter": "^2.2.0",
+        "nswag": "^14.6.3",
+        "typescript": "~5.6.0"
+    },
+    "overrides": {
+        "serialize-javascript": "^7.0.5",
+        "tar": "^7.5.13",
+        "vite": "^6.4.2"
+    }
+}

@@ -1,0 +1,431 @@
+using Microsoft.EntityFrameworkCore;
+using ProjectZ.Application.DTOs;
+using ProjectZ.Application.Interfaces;
+using ProjectZ.Domain.Entities;
+using ProjectZ.Infrastructure.Data;
+
+namespace ProjectZ.Application.Services;
+
+public class FinanceService : IFinanceService
+{
+    private readonly AppDbContext _db;
+
+    public FinanceService(AppDbContext db)
+    {
+        _db = db;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Assets
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    public async Task<List<AssetDto>> GetAssetsAsync(Guid userId)
+    {
+        return await _db.Assets
+            .Where(a => a.UserId == userId)
+            .OrderByDescending(a => a.CreatedAt)
+            .Select(a => new AssetDto
+            {
+                Id = a.Id,
+                Name = a.Name,
+                Category = a.Category.ToString(),
+                CurrentValue = a.CurrentValue,
+                Currency = a.Currency,
+                Description = a.Description,
+                CreatedAt = a.CreatedAt,
+                UpdatedAt = a.UpdatedAt
+            })
+            .ToListAsync();
+    }
+
+    public async Task<AssetDto> GetAssetByIdAsync(Guid id, Guid userId)
+    {
+        var asset = await _db.Assets
+            .Where(a => a.Id == id && a.UserId == userId)
+            .FirstOrDefaultAsync();
+
+        if (asset == null)
+            throw new KeyNotFoundException($"Asset with ID {id} not found or access denied.");
+
+        return new AssetDto
+        {
+            Id = asset.Id,
+            Name = asset.Name,
+            Category = asset.Category.ToString(),
+            CurrentValue = asset.CurrentValue,
+            Currency = asset.Currency,
+            Description = asset.Description,
+            CreatedAt = asset.CreatedAt,
+            UpdatedAt = asset.UpdatedAt
+        };
+    }
+
+    public async Task<AssetDto> CreateAssetAsync(CreateAssetRequest request, Guid userId)
+    {
+        ValidateAssetRequest(request.Name, request.CurrentValue);
+
+        var asset = new Asset
+        {
+            UserId = userId,
+            Name = request.Name.Trim(),
+            Category = request.Category,
+            CurrentValue = request.CurrentValue,
+            Currency = request.Currency,
+            Description = request.Description?.Trim(),
+            TenantId = "default"
+        };
+
+        _db.Assets.Add(asset);
+        await _db.SaveChangesAsync();
+
+        return new AssetDto
+        {
+            Id = asset.Id,
+            Name = asset.Name,
+            Category = asset.Category.ToString(),
+            CurrentValue = asset.CurrentValue,
+            Currency = asset.Currency,
+            Description = asset.Description,
+            CreatedAt = asset.CreatedAt,
+            UpdatedAt = asset.UpdatedAt
+        };
+    }
+
+    public async Task<AssetDto> UpdateAssetAsync(Guid id, UpdateAssetRequest request, Guid userId)
+    {
+        ValidateAssetRequest(request.Name, request.CurrentValue);
+
+        var asset = await _db.Assets
+            .Where(a => a.Id == id && a.UserId == userId)
+            .FirstOrDefaultAsync();
+
+        if (asset == null)
+            throw new KeyNotFoundException($"Asset with ID {id} not found or access denied.");
+
+        asset.Name = request.Name.Trim();
+        asset.Category = request.Category;
+        asset.CurrentValue = request.CurrentValue;
+        asset.Currency = request.Currency;
+        asset.Description = request.Description?.Trim();
+
+        await _db.SaveChangesAsync();
+
+        return new AssetDto
+        {
+            Id = asset.Id,
+            Name = asset.Name,
+            Category = asset.Category.ToString(),
+            CurrentValue = asset.CurrentValue,
+            Currency = asset.Currency,
+            Description = asset.Description,
+            CreatedAt = asset.CreatedAt,
+            UpdatedAt = asset.UpdatedAt
+        };
+    }
+
+    public async Task DeleteAssetAsync(Guid id, Guid userId)
+    {
+        var asset = await _db.Assets
+            .Where(a => a.Id == id && a.UserId == userId)
+            .FirstOrDefaultAsync();
+
+        if (asset == null)
+            throw new KeyNotFoundException($"Asset with ID {id} not found or access denied.");
+
+        _db.Assets.Remove(asset);  // Soft delete via DbContext override
+        await _db.SaveChangesAsync();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Liabilities
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    public async Task<List<LiabilityDto>> GetLiabilitiesAsync(Guid userId)
+    {
+        return await _db.Liabilities
+            .Where(l => l.UserId == userId)
+            .OrderByDescending(l => l.CreatedAt)
+            .Select(l => new LiabilityDto
+            {
+                Id = l.Id,
+                Name = l.Name,
+                Category = l.Category,
+                OutstandingAmount = l.OutstandingAmount,
+                InterestRate = l.InterestRate,
+                Currency = l.Currency,
+                Description = l.Description,
+                CreatedAt = l.CreatedAt,
+                UpdatedAt = l.UpdatedAt
+            })
+            .ToListAsync();
+    }
+
+    public async Task<LiabilityDto> GetLiabilityByIdAsync(Guid id, Guid userId)
+    {
+        var liability = await _db.Liabilities
+            .Where(l => l.Id == id && l.UserId == userId)
+            .FirstOrDefaultAsync();
+
+        if (liability == null)
+            throw new KeyNotFoundException($"Liability with ID {id} not found or access denied.");
+
+        return new LiabilityDto
+        {
+            Id = liability.Id,
+            Name = liability.Name,
+            Category = liability.Category,
+            OutstandingAmount = liability.OutstandingAmount,
+            InterestRate = liability.InterestRate,
+            Currency = liability.Currency,
+            Description = liability.Description,
+            CreatedAt = liability.CreatedAt,
+            UpdatedAt = liability.UpdatedAt
+        };
+    }
+
+    public async Task<LiabilityDto> CreateLiabilityAsync(CreateLiabilityRequest request, Guid userId)
+    {
+        ValidateLiabilityRequest(request.Name, request.OutstandingAmount);
+
+        var liability = new Liability
+        {
+            UserId = userId,
+            Name = request.Name.Trim(),
+            Category = request.Category.Trim(),
+            OutstandingAmount = request.OutstandingAmount,
+            InterestRate = request.InterestRate,
+            Currency = request.Currency,
+            Description = request.Description?.Trim(),
+            TenantId = "default"
+        };
+
+        _db.Liabilities.Add(liability);
+        await _db.SaveChangesAsync();
+
+        return new LiabilityDto
+        {
+            Id = liability.Id,
+            Name = liability.Name,
+            Category = liability.Category,
+            OutstandingAmount = liability.OutstandingAmount,
+            InterestRate = liability.InterestRate,
+            Currency = liability.Currency,
+            Description = liability.Description,
+            CreatedAt = liability.CreatedAt,
+            UpdatedAt = liability.UpdatedAt
+        };
+    }
+
+    public async Task<LiabilityDto> UpdateLiabilityAsync(Guid id, UpdateLiabilityRequest request, Guid userId)
+    {
+        ValidateLiabilityRequest(request.Name, request.OutstandingAmount);
+
+        var liability = await _db.Liabilities
+            .Where(l => l.Id == id && l.UserId == userId)
+            .FirstOrDefaultAsync();
+
+        if (liability == null)
+            throw new KeyNotFoundException($"Liability with ID {id} not found or access denied.");
+
+        liability.Name = request.Name.Trim();
+        liability.Category = request.Category.Trim();
+        liability.OutstandingAmount = request.OutstandingAmount;
+        liability.InterestRate = request.InterestRate;
+        liability.Currency = request.Currency;
+        liability.Description = request.Description?.Trim();
+
+        await _db.SaveChangesAsync();
+
+        return new LiabilityDto
+        {
+            Id = liability.Id,
+            Name = liability.Name,
+            Category = liability.Category,
+            OutstandingAmount = liability.OutstandingAmount,
+            InterestRate = liability.InterestRate,
+            Currency = liability.Currency,
+            Description = liability.Description,
+            CreatedAt = liability.CreatedAt,
+            UpdatedAt = liability.UpdatedAt
+        };
+    }
+
+    public async Task DeleteLiabilityAsync(Guid id, Guid userId)
+    {
+        var liability = await _db.Liabilities
+            .Where(l => l.Id == id && l.UserId == userId)
+            .FirstOrDefaultAsync();
+
+        if (liability == null)
+            throw new KeyNotFoundException($"Liability with ID {id} not found or access denied.");
+
+        _db.Liabilities.Remove(liability);  // Soft delete via DbContext override
+        await _db.SaveChangesAsync();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Transactions
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    public async Task<List<TransactionDto>> GetTransactionsAsync(Guid userId, DateTime? startDate = null, DateTime? endDate = null)
+    {
+        var query = _db.Transactions.Where(t => t.UserId == userId);
+
+        if (startDate.HasValue)
+            query = query.Where(t => t.Date >= startDate.Value);
+
+        if (endDate.HasValue)
+            query = query.Where(t => t.Date <= endDate.Value);
+
+        return await query
+            .OrderByDescending(t => t.Date)
+            .ThenByDescending(t => t.CreatedAt)
+            .Select(t => new TransactionDto
+            {
+                Id = t.Id,
+                Type = t.Type.ToString(),
+                Amount = t.Amount,
+                Category = t.Category,
+                Date = t.Date,
+                Description = t.Description,
+                Currency = t.Currency,
+                CreatedAt = t.CreatedAt,
+                UpdatedAt = t.UpdatedAt
+            })
+            .ToListAsync();
+    }
+
+    public async Task<TransactionDto> GetTransactionByIdAsync(Guid id, Guid userId)
+    {
+        var transaction = await _db.Transactions
+            .Where(t => t.Id == id && t.UserId == userId)
+            .FirstOrDefaultAsync();
+
+        if (transaction == null)
+            throw new KeyNotFoundException($"Transaction with ID {id} not found or access denied.");
+
+        return new TransactionDto
+        {
+            Id = transaction.Id,
+            Type = transaction.Type.ToString(),
+            Amount = transaction.Amount,
+            Category = transaction.Category,
+            Date = transaction.Date,
+            Description = transaction.Description,
+            Currency = transaction.Currency,
+            CreatedAt = transaction.CreatedAt,
+            UpdatedAt = transaction.UpdatedAt
+        };
+    }
+
+    public async Task<TransactionDto> CreateTransactionAsync(CreateTransactionRequest request, Guid userId)
+    {
+        ValidateTransactionRequest(request.Amount, request.Category);
+
+        var transaction = new Transaction
+        {
+            UserId = userId,
+            Type = request.Type,
+            Amount = request.Amount,
+            Category = request.Category.Trim(),
+            Date = request.Date,
+            Description = request.Description?.Trim(),
+            Currency = request.Currency,
+            TenantId = "default"
+        };
+
+        _db.Transactions.Add(transaction);
+        await _db.SaveChangesAsync();
+
+        return new TransactionDto
+        {
+            Id = transaction.Id,
+            Type = transaction.Type.ToString(),
+            Amount = transaction.Amount,
+            Category = transaction.Category,
+            Date = transaction.Date,
+            Description = transaction.Description,
+            Currency = transaction.Currency,
+            CreatedAt = transaction.CreatedAt,
+            UpdatedAt = transaction.UpdatedAt
+        };
+    }
+
+    public async Task<TransactionDto> UpdateTransactionAsync(Guid id, UpdateTransactionRequest request, Guid userId)
+    {
+        ValidateTransactionRequest(request.Amount, request.Category);
+
+        var transaction = await _db.Transactions
+            .Where(t => t.Id == id && t.UserId == userId)
+            .FirstOrDefaultAsync();
+
+        if (transaction == null)
+            throw new KeyNotFoundException($"Transaction with ID {id} not found or access denied.");
+
+        transaction.Type = request.Type;
+        transaction.Amount = request.Amount;
+        transaction.Category = request.Category.Trim();
+        transaction.Date = request.Date;
+        transaction.Description = request.Description?.Trim();
+        transaction.Currency = request.Currency;
+
+        await _db.SaveChangesAsync();
+
+        return new TransactionDto
+        {
+            Id = transaction.Id,
+            Type = transaction.Type.ToString(),
+            Amount = transaction.Amount,
+            Category = transaction.Category,
+            Date = transaction.Date,
+            Description = transaction.Description,
+            Currency = transaction.Currency,
+            CreatedAt = transaction.CreatedAt,
+            UpdatedAt = transaction.UpdatedAt
+        };
+    }
+
+    public async Task DeleteTransactionAsync(Guid id, Guid userId)
+    {
+        var transaction = await _db.Transactions
+            .Where(t => t.Id == id && t.UserId == userId)
+            .FirstOrDefaultAsync();
+
+        if (transaction == null)
+            throw new KeyNotFoundException($"Transaction with ID {id} not found or access denied.");
+
+        _db.Transactions.Remove(transaction);  // Soft delete via DbContext override
+        await _db.SaveChangesAsync();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Validation Helpers
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    private static void ValidateAssetRequest(string name, decimal value)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Asset name is required.");
+
+        if (value < 0)
+            throw new ArgumentException("Asset value cannot be negative.");
+    }
+
+    private static void ValidateLiabilityRequest(string name, decimal amount)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Liability name is required.");
+
+        if (amount < 0)
+            throw new ArgumentException("Outstanding amount cannot be negative.");
+    }
+
+    private static void ValidateTransactionRequest(decimal amount, string category)
+    {
+        if (amount < 0)
+            throw new ArgumentException("Transaction amount cannot be negative.");
+
+        if (string.IsNullOrWhiteSpace(category))
+            throw new ArgumentException("Transaction category is required.");
+    }
+}

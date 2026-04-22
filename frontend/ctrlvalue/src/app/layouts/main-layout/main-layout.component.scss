@@ -1,0 +1,411 @@
+// ══════════════════════════════════════════════════════
+// OBSIDIAN TERMINAL — Main Layout
+// ══════════════════════════════════════════════════════
+
+// ── Dashboard Layout ──
+.dashboard-layout {
+    height: 100vh;
+    display: block;
+    background: var(--color-bg-primary);
+}
+
+// ══════════════════════════════════════════════════════
+// SIDEBAR — Always Dark (both themes)
+// ══════════════════════════════════════════════════════
+.sidebar {
+    width: var(--sidebar-width);
+    background: var(--color-sidebar-bg) !important;
+    border-right: 1px solid var(--color-sidebar-border) !important;
+    display: flex;
+    flex-direction: column;
+    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: visible !important;
+
+    &.mat-drawer {
+        overflow: visible !important;
+        background: var(--color-sidebar-bg) !important;
+    }
+
+    ::ng-deep .mat-drawer-inner-container {
+        overflow: visible !important;
+        display: flex;
+        flex-direction: column;
+        background: var(--color-sidebar-bg);
+    }
+}
+
+// ── Sidebar Header ──
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    padding: 0 var(--space-4);
+    border-bottom: 1px solid var(--color-sidebar-border);
+    height: var(--topbar-height);
+    overflow: hidden;
+}
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+
+    .brand-mark {
+        flex-shrink: 0;
+
+        &.brand-logo {
+            width: 28px;
+            height: 28px;
+            background: none;
+            border-radius: 0;
+            box-shadow: none;
+            object-fit: contain;
+        }
+    }
+
+    .brand-name {
+        font-family: var(--font-family-display);
+        font-size: 0.875rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        color: #E8E6E3;
+        white-space: nowrap;
+        transition: opacity 0.2s ease, width 0.2s ease;
+    }
+}
+
+// ── Navigation List ──
+.sidebar-nav {
+    flex: 1;
+    padding: var(--space-3) var(--space-2);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow-y: auto;
+    overflow-x: visible;
+
+    // Sidebar scrollbar
+    &::-webkit-scrollbar { width: 3px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb {
+        background: var(--color-sidebar-border);
+        border-radius: 999px;
+    }
+
+    .mat-mdc-list-item {
+        border-radius: var(--radius-sm) !important;
+        margin-bottom: 1px;
+        transition: background 0.15s ease, color 0.15s ease;
+        position: relative;
+        overflow: visible !important;
+        color: var(--color-sidebar-text) !important;
+        border-left: 3px solid transparent;
+
+        .mat-icon {
+            color: var(--color-sidebar-text) !important;
+            font-size: 1.1rem;
+            width: 1.1rem;
+            height: 1.1rem;
+            margin-right: var(--space-3);
+            transition: color 0.15s ease;
+        }
+
+        .nav-label {
+            color: var(--color-sidebar-text) !important;
+            font-size: 0.8375rem;
+            font-weight: 500;
+            font-family: var(--font-family);
+            transition: color 0.15s ease;
+        }
+
+        &:hover {
+            background: var(--color-sidebar-hover) !important;
+            color: var(--color-sidebar-text-hover) !important;
+            border-left-color: transparent;
+
+            .mat-icon,
+            .nav-label {
+                color: var(--color-sidebar-text-hover) !important;
+            }
+        }
+
+        &.active {
+            background: var(--color-sidebar-active-bg) !important;
+            border-left-color: var(--color-sidebar-text-active);
+            color: var(--color-sidebar-text-active) !important;
+
+            .mat-icon,
+            .nav-label {
+                color: var(--color-sidebar-text-active) !important;
+            }
+        }
+    }
+}
+
+// ── Sidebar Divider ──
+.sidebar-divider {
+    border-color: var(--color-sidebar-border) !important;
+    margin: var(--space-2) var(--space-2);
+}
+
+// ── Accordion Nav Groups ──
+.nav-group {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    border: none !important;
+    margin: 0 !important;
+
+    ::ng-deep .mat-expansion-panel-body {
+        padding: 0 !important;
+    }
+
+    ::ng-deep .mat-expansion-panel-header-title {
+        align-items: center;
+        gap: var(--space-2);
+    }
+
+    .nav-group-header {
+        min-height: 36px !important;
+        padding: 0 var(--space-3) 0 calc(var(--space-3) - 3px) !important;
+        background: transparent !important;
+        border-left: 3px solid transparent;
+
+        &:hover {
+            background: var(--color-sidebar-hover) !important;
+        }
+
+        .group-icon {
+            font-size: 0.95rem;
+            width: 0.95rem;
+            height: 0.95rem;
+            color: var(--color-sidebar-text) !important;
+        }
+    }
+
+    .nav-group-list {
+        padding: 0 0 var(--space-1) var(--space-2) !important;
+    }
+}
+
+// ── Section Labels (Money, Investing, Management) ──
+.nav-section-label {
+    font-family: var(--font-family-display) !important;
+    font-size: 0.6875rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.12em !important;
+    color: var(--color-sidebar-section) !important;
+}
+
+// ── Text label & brand visibility ──
+.nav-label,
+.brand-name {
+    white-space: nowrap;
+    opacity: 1;
+    transition: opacity 0.2s ease;
+}
+
+// ══════════════════════════════════════════════════════
+// TOPBAR
+// ══════════════════════════════════════════════════════
+.main-content {
+    flex: 1;
+    background: var(--color-bg-primary);
+    position: relative;
+    overflow-y: auto;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.topbar {
+    display: flex;
+    align-items: center;
+    padding: 0 var(--space-5);
+    background: var(--color-bg-primary) !important;
+    border-bottom: 1px solid var(--color-border);
+    height: var(--topbar-height);
+    flex-shrink: 0;
+    gap: var(--space-3);
+
+    // Override mat-toolbar bg
+    &.mat-toolbar {
+        background: var(--color-bg-primary) !important;
+    }
+}
+
+.spacer {
+    flex: 1 1 auto;
+}
+
+// ── User Badge ──
+.user-badge {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 4px 10px 4px 4px;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+
+    &:hover {
+        background: var(--color-bg-secondary);
+        border-color: var(--color-border);
+    }
+
+    .user-avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 2px;
+        background: var(--color-accent-primary);
+        color: #0A0A0A;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-family-display);
+        font-weight: 700;
+        font-size: 0.75rem;
+        letter-spacing: 0.02em;
+        flex-shrink: 0;
+    }
+
+    .user-name {
+        font-weight: 500;
+        font-size: 0.8125rem;
+        color: var(--color-text-primary);
+        letter-spacing: 0.02em;
+    }
+}
+
+.user-chevron {
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+    color: var(--color-text-muted) !important;
+}
+
+// ── Profile Menu ──
+.profile-menu-header {
+    cursor: default !important;
+    padding: var(--space-3) var(--space-4) !important;
+    pointer-events: none;
+
+    .profile-name {
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: var(--color-text-primary);
+        font-family: var(--font-family-display);
+        letter-spacing: 0.02em;
+    }
+
+    .profile-email {
+        font-size: 0.75rem;
+        color: var(--color-text-muted);
+        margin-top: 2px;
+    }
+}
+
+// Ticker strip styles live in ticker-strip.component.ts (view-encapsulated)
+
+// ══════════════════════════════════════════════════════
+// CONTENT AREA
+// ══════════════════════════════════════════════════════
+.content {
+    padding: var(--space-6);
+    flex: 1;
+    overflow-y: auto;
+}
+
+// ══════════════════════════════════════════════════════
+// COLLAPSED SIDEBAR STATE
+// ══════════════════════════════════════════════════════
+.sidebar-collapsed {
+    .sidebar {
+        width: var(--sidebar-width-collapsed);
+    }
+
+    .brand-name {
+        opacity: 0;
+        width: 0;
+        overflow: hidden;
+    }
+
+    .sidebar-header {
+        justify-content: center;
+        padding: 0;
+    }
+
+    .nav-subheader,
+    .nav-section-label {
+        display: none;
+    }
+
+    .nav-label:not(.nav-section-label) {
+        display: none;
+        opacity: 0;
+    }
+
+    .mat-mdc-list-item {
+        justify-content: center;
+        padding: 0 !important;
+
+        .mat-icon {
+            margin-right: 0;
+        }
+
+        &:hover {
+            .nav-label:not(.nav-section-label) {
+                display: block;
+                opacity: 1;
+                position: absolute;
+                left: 52px;
+                top: 50%;
+                transform: translateY(-50%);
+                background: #1A1A1A;
+                color: #E8E6E3;
+                padding: 5px 10px;
+                border: 1px solid #333333;
+                border-radius: var(--radius-sm);
+                box-shadow: var(--shadow-lg);
+                z-index: 9999;
+                width: max-content;
+                font-weight: 500;
+                font-size: 0.8125rem;
+                pointer-events: none;
+
+                &::before {
+                    content: '';
+                    position: absolute;
+                    left: -4px;
+                    top: 50%;
+                    transform: translateY(-50%) rotate(45deg);
+                    width: 7px;
+                    height: 7px;
+                    background: #1A1A1A;
+                    border-left: 1px solid #333333;
+                    border-bottom: 1px solid #333333;
+                    z-index: -1;
+                }
+            }
+        }
+    }
+
+    .nav-group {
+        .nav-group-header {
+            justify-content: center;
+            padding: 0 !important;
+        }
+
+        .nav-group-list {
+            padding-left: 0 !important;
+        }
+    }
+}
+
+// ── Responsive ──
+@media (max-width: 768px) {
+    .content {
+        padding: var(--space-4);
+    }
+}

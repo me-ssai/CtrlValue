@@ -1,0 +1,212 @@
+<h2 mat-dialog-title>
+    <mat-icon>swap_horiz</mat-icon>
+    {{ isEditMode ? 'Edit Transaction' : 'Add Transaction' }}
+</h2>
+
+<mat-dialog-content>
+    <form [formGroup]="transactionForm" (ngSubmit)="onSubmit()" class="dialog-form" id="transaction-form">
+        <!-- Core Details -->
+        <div class="row g-3">
+            <div class="col-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Type</mat-label>
+                    <mat-select formControlName="type" required>
+                        <mat-option *ngFor="let type of transactionTypes" [value]="type">{{ txnTypeDisplay[type]
+                            }}</mat-option>
+                    </mat-select>
+                    <mat-icon matPrefix>category</mat-icon>
+                </mat-form-field>
+            </div>
+            <div class="col-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Date</mat-label>
+                    <input matInput [matDatepicker]="picker" formControlName="date" required>
+                    <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                    <mat-datepicker #picker></mat-datepicker>
+                    <mat-icon matPrefix>event</mat-icon>
+                </mat-form-field>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Category</mat-label>
+                    <mat-select formControlName="categoryId" required>
+                        <mat-option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</mat-option>
+                    </mat-select>
+                    <mat-icon matPrefix>label</mat-icon>
+                    <mat-error *ngIf="transactionForm.get('categoryId')?.hasError('required')">Category is
+                        required</mat-error>
+                </mat-form-field>
+            </div>
+            <div class="col-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Currency</mat-label>
+                    <input matInput formControlName="currency" maxlength="3" required>
+                    <mat-icon matPrefix>attach_money</mat-icon>
+                </mat-form-field>
+            </div>
+        </div>
+
+        <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Amount</mat-label>
+            <input matInput type="number" formControlName="amount" step="0.01" min="0" placeholder="0.00" required>
+            <mat-icon matPrefix>payments</mat-icon>
+            <mat-hint *ngIf="isDerived('amount')">Auto-calculated from qty × unit price</mat-hint>
+            <mat-error *ngIf="transactionForm.get('amount')?.hasError('required')">Amount is required</mat-error>
+            <mat-error *ngIf="transactionForm.get('amount')?.hasError('min')">Amount must be positive</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" rows="2"
+                placeholder="Description about this transaction"></textarea>
+            <mat-icon matPrefix>notes</mat-icon>
+            <mat-error *ngIf="transactionForm.get('description')?.hasError('required')">Description is
+                required</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Merchant</mat-label>
+            <input matInput formControlName="merchant" placeholder="e.g. Coles, Woolworths">
+            <mat-icon matPrefix>store</mat-icon>
+        </mat-form-field>
+
+        <!-- Accounts -->
+        <div class="form-section-title">Accounts</div>
+        <div class="row g-3">
+            <div class="col-12">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Primary Account</mat-label>
+                    <mat-select formControlName="accountId" required>
+                        <mat-option *ngFor="let acc of accounts" [value]="acc.id">{{ acc.name }}</mat-option>
+                    </mat-select>
+                    <mat-icon matPrefix>account_balance</mat-icon>
+                    <mat-error *ngIf="transactionForm.get('accountId')?.hasError('required')">Account is required</mat-error>
+                </mat-form-field>
+            </div>
+        </div>
+        <div class="row g-3">
+            <div class="col-6">
+                <div class="field-with-help">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Direction</mat-label>
+                        <mat-select formControlName="direction" required>
+                            <mat-option value="Inflow">Inflow</mat-option>
+                            <mat-option value="Outflow">Outflow</mat-option>
+                        </mat-select>
+                        <mat-icon matPrefix>swap_vert</mat-icon>
+                    </mat-form-field>
+                    <app-help-icon
+                        text="Inflow = money coming into this account (income, sale). Outflow = money leaving (expense, purchase).">
+                    </app-help-icon>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="field-with-help">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Counter Account (Transfer)</mat-label>
+                        <mat-select formControlName="counterAccountId">
+                            <mat-option [value]="null">None</mat-option>
+                            <mat-option *ngFor="let acc of accounts" [value]="acc.id">{{ acc.name }}</mat-option>
+                        </mat-select>
+                        <mat-icon matPrefix>compare_arrows</mat-icon>
+                    </mat-form-field>
+                    <app-help-icon
+                        text="For Transfer type: the other account money is moving to or from. Leave blank for non-transfer transactions.">
+                    </app-help-icon>
+                </div>
+            </div>
+        </div>
+
+        <!-- Investment -->
+        <ng-container *ngIf="showInvestmentSection">
+            <div class="form-section-title">
+                Investment Details
+                <span class="section-hint" *ngIf="transactionForm.get('type')?.value === 'AssetPurchase' || transactionForm.get('type')?.value === 'AssetSale'">
+                    — link this transaction to a stock, ETF, metal or crypto holding
+                </span>
+            </div>
+            <mat-form-field appearance="outline" class="w-100">
+                <mat-label>Instrument</mat-label>
+                <mat-select formControlName="instrumentId">
+                    <mat-option [value]="''">None</mat-option>
+                    <mat-option *ngFor="let inst of filteredInstruments" [value]="inst.id">
+                        {{ inst.symbol }} - {{ inst.name }}
+                    </mat-option>
+                </mat-select>
+                <mat-icon matPrefix>show_chart</mat-icon>
+            </mat-form-field>
+
+            <div class="row g-3">
+                <div class="col-4">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Quantity</mat-label>
+                        <input matInput type="number" formControlName="quantity" step="0.000001">
+                        <mat-icon matPrefix>numbers</mat-icon>
+                        <mat-hint *ngIf="isDerived('quantity')">Auto-calculated</mat-hint>
+                    </mat-form-field>
+                </div>
+                <div class="col-4">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Unit Price</mat-label>
+                        <input matInput type="number" formControlName="unitPrice" step="0.01">
+                        <mat-icon matPrefix>price_change</mat-icon>
+                        <mat-hint *ngIf="isDerived('unitPrice')">Auto-calculated</mat-hint>
+                    </mat-form-field>
+                </div>
+                <div class="col-4">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Fees</mat-label>
+                        <input matInput type="number" formControlName="fees" step="0.01">
+                        <mat-icon matPrefix>local_offer</mat-icon>
+                    </mat-form-field>
+                </div>
+            </div>
+        </ng-container>
+
+        <!-- Additional -->
+        <div class="form-section-title">Additional Details</div>
+        <mat-checkbox formControlName="isTaxDeductible" class="mb-3">Tax Deductible</mat-checkbox>
+
+        <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Tags (comma separated)</mat-label>
+            <input matInput formControlName="tags" placeholder="e.g., travel, food, business">
+            <mat-icon matPrefix>label</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Receipt URL</mat-label>
+            <input matInput formControlName="receiptUrl" placeholder="https://...">
+            <mat-icon matPrefix>link</mat-icon>
+        </mat-form-field>
+
+        <div class="row g-3">
+            <div class="col-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>External ID</mat-label>
+                    <input matInput formControlName="externalId">
+                    <mat-icon matPrefix>fingerprint</mat-icon>
+                </mat-form-field>
+            </div>
+            <div class="col-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Related Transaction ID</mat-label>
+                    <input matInput formControlName="relatedTxnId">
+                    <mat-icon matPrefix>sync_alt</mat-icon>
+                </mat-form-field>
+            </div>
+        </div>
+    </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button (click)="cancel()" [disabled]="loading">Cancel</button>
+    <button mat-raised-button color="primary" form="transaction-form" type="submit"
+        [disabled]="loading || transactionForm.invalid">
+        <mat-icon *ngIf="loading">refresh</mat-icon>
+        <mat-icon *ngIf="!loading">save</mat-icon>
+        {{ isEditMode ? 'Update Transaction' : 'Create Transaction' }}
+    </button>
+</mat-dialog-actions>

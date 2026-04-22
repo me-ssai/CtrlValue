@@ -1,0 +1,68 @@
+<div class="page-container">
+    <div class="page-header">
+        <h1><mat-icon>credit_card</mat-icon> Liabilities</h1>
+        <button mat-raised-button color="primary" (click)="createLiability()">
+            <mat-icon>add</mat-icon> Add Liability
+        </button>
+    </div>
+
+    <mat-card class="mb-4" *ngIf="!loading && liabilities.length > 0">
+        <mat-card-content>
+            <div class="d-flex align-items-center justify-content-between">
+                <span class="text-muted">Total Liabilities</span>
+                <span class="total-value">{{ getTotalAmount() | currency:'AUD':'symbol':'1.2-2' }}</span>
+            </div>
+        </mat-card-content>
+    </mat-card>
+
+    <div class="loading" *ngIf="loading">
+        <mat-icon>refresh</mat-icon> Loading liabilities...
+    </div>
+
+    <div class="empty-state" *ngIf="!loading && liabilities.length === 0 && !error">
+        <mat-icon>credit_card</mat-icon>
+        <h3>No Liabilities</h3>
+        <p>Track your debts and loans here.</p>
+        <button mat-raised-button color="primary" (click)="createLiability()">
+            <mat-icon>add</mat-icon> Add Liability
+        </button>
+    </div>
+
+    <div class="table-container" *ngIf="!loading && liabilities.length > 0">
+        <table class="w-100">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Outstanding Amount</th>
+                    <th>Interest Rate</th>
+                    <th>Currency</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let liability of liabilities">
+                    <td class="fw-semibold">{{ liability.name }}</td>
+                    <td><span class="category-badge">{{ liability.category }}</span></td>
+                    <td class="value fw-bold">
+                        {{ liability.outstandingAmount | currency:liability.currency:'symbol':'1.2-2' }}
+                    </td>
+                    <td class="text-muted">{{ liability.interestRate ? (liability.interestRate + '%') : '—' }}</td>
+                    <td class="text-muted">{{ liability.currency }}</td>
+                    <td class="description text-muted">{{ liability.description || '—' }}</td>
+                    <td class="actions-cell">
+                        <button mat-icon-button color="primary" *ngIf="liability.id"
+                            (click)="editLiability(liability.id!)" matTooltip="Edit">
+                            <mat-icon>edit</mat-icon>
+                        </button>
+                        <button mat-icon-button color="warn" *ngIf="liability.id && liability.name"
+                            (click)="deleteLiability(liability.id!, liability.name!)" matTooltip="Delete">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,129 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using ProjectZ.Application.DTOs;
+using ProjectZ.Application.Interfaces;
+
+namespace ProjectZ.Api.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+[Authorize]
+public class LiabilitiesController : ControllerBase
+{
+    private readonly IFinanceService _financeService;
+
+    public LiabilitiesController(IFinanceService financeService)
+    {
+        _financeService = financeService;
+    }
+
+    /// <summary>
+    /// Get all liabilities for the authenticated user.
+    /// </summary>
+    [HttpGet]
+    [ProducesResponseType(typeof(List<LiabilityDto>), 200)]
+    [ProducesResponseType(401)]
+    public async Task<IActionResult> GetLiabilities()
+    {
+        var userId = GetUserId();
+        var liabilities = await _financeService.GetLiabilitiesAsync(userId);
+        return Ok(liabilities);
+    }
+
+    /// <summary>
+    /// Get a specific liability by ID.
+    /// </summary>
+    [HttpGet("{id}")]
+    [ProducesResponseType(typeof(LiabilityDto), 200)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(404)]
+    public async Task<IActionResult> GetLiability(Guid id)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var liability = await _financeService.GetLiabilityByIdAsync(id, userId);
+            return Ok(liability);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Create a new liability.
+    /// </summary>
+    [HttpPost]
+    [ProducesResponseType(typeof(LiabilityDto), 201)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    public async Task<IActionResult> CreateLiability([FromBody] CreateLiabilityRequest request)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var liability = await _financeService.CreateLiabilityAsync(request, userId);
+            return CreatedAtAction(nameof(GetLiability), new { id = liability.Id }, liability);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Update an existing liability.
+    /// </summary>
+    [HttpPut("{id}")]
+    [ProducesResponseType(typeof(LiabilityDto), 200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(404)]
+    public async Task<IActionResult> UpdateLiability(Guid id, [FromBody] UpdateLiabilityRequest request)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var liability = await _financeService.UpdateLiabilityAsync(id, request, userId);
+            return Ok(liability);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Delete a liability (soft delete).
+    /// </summary>
+    [HttpDelete("{id}")]
+    [ProducesResponseType(204)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(404)]
+    public async Task<IActionResult> DeleteLiability(Guid id)
+    {
+        try
+        {
+            var userId = GetUserId();
+            await _financeService.DeleteLiabilityAsync(id, userId);
+            return NoContent();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+    }
+
+    private Guid GetUserId()
+    {
+        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? throw new UnauthorizedAccessException("User ID not found in token.");
+        return Guid.Parse(claim);
+    }
+}

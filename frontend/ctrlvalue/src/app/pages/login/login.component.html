@@ -1,0 +1,103 @@
+<div class="d-flex align-items-center justify-content-center min-vh-100 position-relative overflow-hidden p-3">
+    <div class="auth-glow"></div>
+
+    <mat-card class="auth-card animate-fade-in-up">
+
+        <!-- ── Step 1: Credentials ────────────────────────────── -->
+        <ng-container *ngIf="step === 'credentials'">
+            <mat-card-header class="auth-header">
+                <div class="auth-logo auth-logo--brand">
+                    <img src="assets/logo-big-light-bg.svg" alt="Ctrl Value" class="auth-brand-logo" />
+                </div>
+                <mat-card-title>Welcome back</mat-card-title>
+                <mat-card-subtitle>Sign in to your wealth dashboard</mat-card-subtitle>
+            </mat-card-header>
+
+            <mat-card-content>
+                <form (ngSubmit)="onSubmitCredentials()" class="auth-form">
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Email</mat-label>
+                        <input matInput type="email" [(ngModel)]="email" name="email" placeholder="you@example.com"
+                            autocomplete="email" required>
+                        <mat-icon matPrefix>email</mat-icon>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Password</mat-label>
+                        <input matInput type="password" [(ngModel)]="password" name="password" placeholder="••••••••"
+                            autocomplete="current-password" required>
+                        <mat-icon matPrefix>lock</mat-icon>
+                    </mat-form-field>
+
+                    <button mat-raised-button color="primary" type="submit" class="w-100 auth-submit"
+                        [disabled]="loading">
+                        <mat-icon *ngIf="loading">refresh</mat-icon>
+                        <span *ngIf="!loading">Sign In</span>
+                        <span *ngIf="loading">Signing in...</span>
+                    </button>
+                </form>
+            </mat-card-content>
+
+            <mat-card-footer class="auth-footer">
+                <p>Don't have an account? <a routerLink="/register">Create one</a></p>
+            </mat-card-footer>
+        </ng-container>
+
+        <!-- ── Step 2: Data Collection & Usage Notice ───────────── -->
+        <ng-container *ngIf="step === 'notice'">
+            <mat-card-header class="auth-header">
+                <div class="auth-logo notice-logo">
+                    <mat-icon>info</mat-icon>
+                </div>
+                <mat-card-title>Data Collection &amp; Usage Notice</mat-card-title>
+                <mat-card-subtitle>Please read before continuing</mat-card-subtitle>
+            </mat-card-header>
+
+            <mat-card-content>
+                <div class="notice-body">
+                    <p>Ctrl Value collects and processes the following information to provide its financial tracking services.</p>
+
+                    <h4>What we collect</h4>
+                    <ul>
+                        <li>Account information: your name, email address, and account credentials</li>
+                        <li>Financial data: account balances, transactions, positions, valuations, and budgets that you import or enter manually</li>
+                        <li>Usage data: login timestamps, session activity, and feature interactions</li>
+                    </ul>
+
+                    <h4>How we use it</h4>
+                    <ul>
+                        <li>To provide, maintain, and improve the Ctrl Value service</li>
+                        <li>To send security notifications such as email verification codes and password reset links</li>
+                        <li>To support multi-user workspace collaboration where you have granted access to other users</li>
+                    </ul>
+
+                    <h4>Who we share it with</h4>
+                    <ul>
+                        <li>We do not sell your personal data to third parties</li>
+                        <li>Your data may be processed by our infrastructure providers (Microsoft Azure) under data processing agreements</li>
+                        <li>Your data may be disclosed where required by applicable law</li>
+                    </ul>
+
+                    <h4>How long we keep it</h4>
+                    <ul>
+                        <li>Your data is retained for as long as your account remains active</li>
+                        <li>You may request deletion of your account and all associated data by contacting support</li>
+                    </ul>
+
+                    <h4>Your rights</h4>
+                    <ul>
+                        <li>You have the right to access, correct, or request deletion of your personal data</li>
+                        <li>You may withdraw your consent at any time by deactivating your account</li>
+                        <li>For privacy enquiries, refer to the repository documentation</li>
+                    </ul>
+                </div>
+
+                <button mat-raised-button color="primary" class="w-100 auth-submit mt-3" (click)="acknowledgeNotice()">
+                    <mat-icon>check_circle</mat-icon>
+                    I Acknowledge and Continue
+                </button>
+            </mat-card-content>
+        </ng-container>
+
+    </mat-card>
+</div>

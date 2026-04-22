@@ -1,0 +1,82 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# DAST — OWASP ZAP Baseline Scan
+#
+# Runs a passive security scan against the staging environment on a schedule.
+# Does not deploy code — runs against an already-deployed staging instance.
+#
+# Required pipeline variable (set in Library → ctrlvalue-prod-vars or as a
+# secret pipeline variable):
+#   STAGING_URL  — e.g. https://staging.ctrlvalue.app
+#
+# The ZAP baseline scan crawls the target, identifies passive issues, and
+# publishes an HTML report as a build artifact. The build fails if ZAP finds
+# any FAIL-level alerts (configurable via -l flag).
+# ─────────────────────────────────────────────────────────────────────────────
+
+trigger: none   # Manual or scheduled only — not triggered by pushes
+
+schedules:
+  - cron: "0 2 * * 1"      # Every Monday at 02:00 UTC
+    displayName: Weekly DAST scan
+    branches:
+      include:
+        - main
+    always: true            # Run even when there are no code changes
+
+pool:
+  name: Default
+
+variables:
+  - group: ctrlvalue-prod-vars
+  - name: zapImage
+    value: ghcr.io/zaproxy/zaproxy:stable
+  - name: reportDir
+    value: $(Build.ArtifactStagingDirectory)/zap-report
+
+steps:
+  # ── Verify Docker is available ──────────────────────────────────────────────
+  - script: docker --version
+    displayName: Verify Docker
+
+  # ── Create report output directory ─────────────────────────────────────────
+  - script: mkdir -p $(reportDir)
+    displayName: Create report directory
+
+  # ── Pull ZAP image ──────────────────────────────────────────────────────────
+  - script: docker pull $(zapImage)
+    displayName: Pull OWASP ZAP image
+
+  # ── Run ZAP Baseline Scan ───────────────────────────────────────────────────
+  # Baseline scan = passive crawl only (no active attacks).
+  # -t  target URL
+  # -r  HTML report filename
+  # -l  minimum alert level to report (PASS|IGNORE|INFO|WARN|FAIL)
+  # -I  do not fail on WARN-level alerts (only FAIL-level fails the build)
+  # Exit codes: 0 = no alerts, 1 = WARN alerts, 2 = FAIL alerts, 3 = error
+  - script: |
+      docker run --rm \
+        -v $(reportDir):/zap/wrk:rw \
+        $(zapImage) \
+        zap-baseline.py \
+          -t $(STAGING_URL) \
+          -r zap-report.html \
+          -l WARN \
+          -I
+      EXIT_CODE=$?
+      echo "ZAP exit code: $EXIT_CODE"
+      # Exit code 2 = FAIL-level alerts found → fail the build
+      if [ $EXIT_CODE -eq 2 ]; then
+        echo "##vso[task.logissue type=error]ZAP found FAIL-level security alerts. Review the report artifact."
+        exit 1
+      fi
+    displayName: DAST - OWASP ZAP baseline scan
+    continueOnError: false
+
+  # ── Publish ZAP report as pipeline artifact ─────────────────────────────────
+  - task: PublishBuildArtifacts@1
+    displayName: Publish ZAP report
+    condition: always()     # Publish even if the scan step failed
+    inputs:
+      PathtoPublish: $(reportDir)
+      ArtifactName: zap-security-report
+      publishLocation: Container

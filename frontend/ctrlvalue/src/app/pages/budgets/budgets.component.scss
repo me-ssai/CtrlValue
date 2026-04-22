@@ -1,0 +1,30 @@
+// Budget-specific styles only
+.progress-cell {
+    min-width: 180px;
+}
+
+.progress-wrapper {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+
+    mat-progress-bar {
+        flex: 1;
+    }
+
+    .progress-text {
+        font-size: var(--font-size-xs);
+        min-width: 35px;
+        text-align: right;
+        color: var(--color-text-secondary);
+    }
+}
+
+.over-budget {
+    color: var(--color-accent-danger);
+    font-weight: 600;
+}
+
+.actions-cell {
+    white-space: nowrap;
+}

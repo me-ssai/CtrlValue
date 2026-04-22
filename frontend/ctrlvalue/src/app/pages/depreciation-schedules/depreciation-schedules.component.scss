@@ -1,0 +1,51 @@
+.page-container {
+    padding: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+
+    h1 {
+        border-bottom: 1px solid var(--color-border);
+        font-size: 24px;
+        font-weight: 500;
+    }
+}
+
+.form-panel {
+    margin-bottom: 24px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+}
+
+.table-container {
+    overflow: auto;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--color-accent-primary) 15%, transparent);
+}
+
+table {
+    width: 100%;
+}
+
+.method-badge {
+    font-size: 11px;
+    background: var(--color-bg-secondary);
+    border: 2px solid var(--color-border);
+    border-radius: 4px;
+    color: var(--color-text-secondary);
+}
+
+.value-cell {
+    font-weight: 500;
+    color: var(--color-text-primary);
+}

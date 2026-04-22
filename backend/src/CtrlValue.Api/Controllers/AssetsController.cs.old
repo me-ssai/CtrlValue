@@ -1,0 +1,129 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using ProjectZ.Application.DTOs;
+using ProjectZ.Application.Interfaces;
+
+namespace ProjectZ.Api.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+[Authorize]
+public class AssetsController : ControllerBase
+{
+    private readonly IFinanceService _financeService;
+
+    public AssetsController(IFinanceService financeService)
+    {
+        _financeService = financeService;
+    }
+
+    /// <summary>
+    /// Get all assets for the authenticated user.
+    /// </summary>
+    [HttpGet]
+    [ProducesResponseType(typeof(List<AssetDto>), 200)]
+    [ProducesResponseType(401)]
+    public async Task<IActionResult> GetAssets()
+    {
+        var userId = GetUserId();
+        var assets = await _financeService.GetAssetsAsync(userId);
+        return Ok(assets);
+    }
+
+    /// <summary>
+    /// Get a specific asset by ID.
+    /// </summary>
+    [HttpGet("{id}")]
+    [ProducesResponseType(typeof(AssetDto), 200)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(404)]
+    public async Task<IActionResult> GetAsset(Guid id)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var asset = await _financeService.GetAssetByIdAsync(id, userId);
+            return Ok(asset);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Create a new asset.
+    /// </summary>
+    [HttpPost]
+    [ProducesResponseType(typeof(AssetDto), 201)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    public async Task<IActionResult> CreateAsset([FromBody] CreateAssetRequest request)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var asset = await _financeService.CreateAssetAsync(request, userId);
+            return CreatedAtAction(nameof(GetAsset), new { id = asset.Id }, asset);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Update an existing asset.
+    /// </summary>
+    [HttpPut("{id}")]
+    [ProducesResponseType(typeof(AssetDto), 200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(404)]
+    public async Task<IActionResult> UpdateAsset(Guid id, [FromBody] UpdateAssetRequest request)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var asset = await _financeService.UpdateAssetAsync(id, request, userId);
+            return Ok(asset);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Delete an asset (soft delete).
+    /// </summary>
+    [HttpDelete("{id}")]
+    [ProducesResponseType(204)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(404)]
+    public async Task<IActionResult> DeleteAsset(Guid id)
+    {
+        try
+        {
+            var userId = GetUserId();
+            await _financeService.DeleteAssetAsync(id, userId);
+            return NoContent();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+    }
+
+    private Guid GetUserId()
+    {
+        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? throw new UnauthorizedAccessException("User ID not found in token.");
+        return Guid.Parse(claim);
+    }
+}

@@ -1,0 +1,30 @@
+<div class="keywords-wrapper">
+    <div class="keyword-chips" *ngIf="keywords.length > 0">
+        <mat-chip-grid #chipGrid>
+            <mat-chip-row *ngFor="let kw of keywords" (removed)="deleteKeyword(kw.id)" class="custom-chip">
+                {{ kw.keyword }}
+                <button matChipRemove>
+                    <mat-icon>cancel</mat-icon>
+                </button>
+            </mat-chip-row>
+        </mat-chip-grid>
+    </div>
+
+    <div *ngIf="keywords.length === 0 && !loading" class="empty-keywords">
+        <mat-icon>info_outline</mat-icon> No transfer keywords defined. Add keywords to auto-populate the counter account during import review.
+    </div>
+
+    <div class="actions-row">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="kw-input">
+            <mat-label>New Keyword</mat-label>
+            <input matInput [(ngModel)]="newKeyword" (keyup.enter)="addKeyword()" placeholder="e.g. TRANSFER TO SAVINGS">
+        </mat-form-field>
+        <button mat-flat-button color="primary" (click)="addKeyword()" [disabled]="!newKeyword.trim() || loading">
+            <mat-icon>add</mat-icon> Add Rule
+        </button>
+    </div>
+
+    <div class="hint">
+        When an imported transaction description contains a keyword, this account is pre-selected as the counter account. Longest match wins.
+    </div>
+</div>

@@ -1,0 +1,38 @@
+// Transaction-specific styles only — layout handled by global styles.scss utilities
+.income {
+    color: var(--color-accent-success);
+}
+
+.expense {
+    color: var(--color-accent-danger);
+}
+
+.transfer {
+    color: var(--color-text-secondary);
+}
+
+.income-chip {
+    --mdc-chip-elevated-container-color: color-mix(in srgb, var(--color-accent-success) 15%, transparent);
+    --mdc-chip-label-text-color: var(--color-accent-success);
+}
+
+.expense-chip {
+    --mdc-chip-elevated-container-color: color-mix(in srgb, var(--color-accent-danger) 15%, transparent);
+    --mdc-chip-label-text-color: var(--color-accent-danger);
+}
+
+.transfer-chip {
+    --mdc-chip-elevated-container-color: var(--color-bg-secondary);
+    --mdc-chip-label-text-color: var(--color-text-secondary);
+}
+
+.description-cell {
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.actions-cell {
+    white-space: nowrap;
+}

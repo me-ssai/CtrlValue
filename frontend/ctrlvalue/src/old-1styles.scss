@@ -1,0 +1,406 @@
+// ── Design Tokens ──
+:root {
+  // Typography — Editorial & Clean
+  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  // Slightly tighter tracking for a more premium feel
+  --letter-spacing-heading: -0.02em;
+
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 2.25rem;
+  --font-size-3xl: 3rem;
+
+  // Spacing — More breathing room (Whitespace = Luxury)
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 1rem; // Increased base spacing
+  --space-4: 1.5rem;
+  --space-5: 2rem;
+  --space-6: 3rem;
+  --space-8: 4rem;
+
+  // Borders & Radius — Sophisticated
+  --radius-sm: 2px;
+  --radius-md: 6px; // Subtle rounding
+  --radius-lg: 12px;
+  --radius-pill: 9999px;
+
+  --border-width: 1px; // Thin, elegant lines
+
+  // Transitions — Smooth & Silk
+  --transition-base: 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  --sidebar-width: 280px;
+
+  /* ── THEME COLORS ── */
+
+  // Base
+  --color-white: #ffffff;
+  --color-black: #111111; // Soft black (Ink)
+  --color-paper: #fafafa; // Very subtle grey for backgrounds
+
+  // The Accents
+  --color-acid: #ccff00; // ACID (The Spark)
+  --color-acid-dim: #d9f548; // Softer Acid for large areas if needed
+  --color-lavender: #f3e8ff; // LAVENDER (The Wash - very light)
+  --color-lavender-dark: #d8b4fe;
+
+  // Semantic Mapping
+  --color-bg-primary: var(--color-white);
+  --color-bg-secondary: var(--color-paper);
+  --color-bg-card: var(--color-white);
+  --color-bg-card-hover: var(--color-white);
+  --color-bg-input: var(--color-white);
+
+  --color-text-primary: var(--color-black);
+  --color-text-secondary: #57534e;
+  --color-text-muted: #a8a29e;
+
+  --color-border: #e5e5e5; // Very light grey borders (not black)
+  --color-border-hover: var(--color-black);
+
+  // Accents
+  --color-accent-primary: var(--color-black); // Primary actions are Black (Classy)
+  --color-accent-highlight: var(--color-acid); // Highlights are Acid
+
+  --color-accent-success: #10b981;
+  --color-accent-warning: #f59e0b;
+  --color-accent-danger: #ef4444;
+
+  // Shadows — "Soft Diffusion" (No more hard lines)
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.01);
+  --shadow-float: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
+}
+
+// ── Reset & Base ──
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+// ── Typography ──
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--color-text-primary);
+  font-weight: 600; // Not too heavy
+  letter-spacing: var(--letter-spacing-heading);
+  line-height: 1.2;
+}
+
+a {
+  color: var(--color-black);
+  font-weight: 600;
+  text-decoration: none;
+  transition: all var(--transition-base);
+  // The "Acid" hint: A tiny underline that grows
+  background-image: linear-gradient(var(--color-acid), var(--color-acid));
+  background-position: 0% 100%;
+  background-repeat: no-repeat;
+  background-size: 0% 2px; // Start invisible
+
+  &:hover {
+    background-size: 100% 2px; // Grow underline
+    color: var(--color-black);
+  }
+}
+
+// ── Button System (Refined) ──
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 0.75rem 1.75rem; // Wider, more elegant
+
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: 500; // Medium weight, not Bold
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  outline: none;
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.btn-primary {
+  @extend .btn;
+  // Classy: Black button, White text
+  background: var(--color-black);
+  color: var(--color-white);
+  box-shadow: var(--shadow-sm);
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+    // Subtle Acid tint on hover
+    background: #222;
+    border-bottom: 2px solid var(--color-acid); // Subtle acid reveal
+  }
+}
+
+.btn-secondary {
+  @extend .btn;
+  // White button, thin border
+  background: var(--color-white);
+  border-color: var(--color-border);
+  color: var(--color-text-primary);
+
+  &:hover:not(:disabled) {
+    background: var(--color-lavender); // Soft Lavender wash
+    border-color: var(--color-lavender-dark);
+    color: var(--color-black);
+  }
+}
+
+// ── Inputs (Minimalist) ──
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.form-label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.form-input {
+  width: 100%;
+  padding: var(--space-3);
+  background: var(--color-bg-input);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font-family: var(--font-family);
+  transition: all var(--transition-base);
+
+  &::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  &:focus {
+    border-color: var(--color-black); // Sharp black focus
+    box-shadow: 0 0 0 3px var(--color-lavender); // Lavender ring, not Acid (too harsh)
+  }
+}
+
+// ── Card (Gallery Style) ──
+.card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+
+  // The "Acid" Hint: A tiny colored strip at the very top, invisible until hover? 
+  // Or just a static elegant strip.
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 3px; // Vertical strip on left
+    background: var(--color-acid);
+    opacity: 0;
+    transition: opacity var(--transition-base);
+  }
+
+  &:hover {
+    border-color: var(--color-border-hover); // Border turns black
+    box-shadow: var(--shadow-float); // Float up
+    transform: translateY(-2px);
+
+    &::before {
+      opacity: 1; // Show acid strip
+    }
+  }
+}
+
+// ── Layout / Sidebar ──
+.sidebar {
+  background-color: var(--color-bg-secondary) !important; // Off-white
+  border-right: 1px solid var(--color-border);
+
+  a {
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-md);
+    margin-bottom: 2px;
+    background: transparent;
+    border: none;
+
+    // Hover: Lavender Wash
+    &:hover {
+      background: var(--color-lavender);
+      color: var(--color-black);
+    }
+
+    // Active: White Card + Acid Dot
+    &.active {
+      background: var(--color-white);
+      color: var(--color-black);
+      box-shadow: var(--shadow-sm);
+      font-weight: 600;
+      position: relative;
+
+      // The "Acid" Dot
+      &::after {
+        content: '';
+        position: absolute;
+        right: var(--space-4);
+        top: 50%;
+        transform: translateY(-50%);
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--color-acid);
+      }
+    }
+  }
+}
+
+// ── Utilities ──
+.text-acid {
+  color: #a4cc00 !important;
+}
+
+// Darker acid for text legibility
+.bg-lavender {
+  background-color: var(--color-lavender) !important;
+}
+
+// ── Angular Material Overrides (Clean & Sharp) ──
+
+// Cards
+.mat-mdc-card {
+  background: var(--color-bg-card) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: none !important; // Flat by default
+
+  &:hover {
+    box-shadow: var(--shadow-lg) !important;
+  }
+}
+
+// Toolbar
+.mat-toolbar {
+  background: var(--color-white) !important;
+  color: var(--color-black) !important;
+  border-bottom: 1px solid var(--color-border);
+}
+
+// Table
+.mat-mdc-table {
+  background: var(--color-white) !important;
+}
+
+.mat-mdc-header-row {
+  background: var(--color-white) !important;
+  border-bottom: 2px solid var(--color-black) !important; // Strong baseline
+}
+
+.mat-mdc-header-cell {
+  color: var(--color-black) !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+}
+
+.mat-mdc-row {
+  border-bottom: 1px solid var(--color-border);
+  transition: background var(--transition-base);
+
+  // Hover: Lavender Wash
+  &:hover {
+    background-color: var(--color-lavender) !important;
+    cursor: pointer;
+  }
+}
+
+.mat-mdc-cell {
+  color: var(--color-text-secondary) !important;
+}
+
+// Form Fields
+.mat-mdc-form-field {
+  --mdc-outlined-idle-outline-color: var(--color-border);
+  --mdc-outlined-hover-outline-color: var(--color-black);
+  // Focus: Black border
+  --mdc-outlined-active-outline-color: var(--color-black);
+  --mat-mdc-form-field-floating-label-color: var(--color-text-secondary);
+}
+
+.mat-mdc-text-field-wrapper {
+  background-color: var(--color-white) !important;
+}
+
+// Paginator & Panels
+.mat-mdc-paginator {
+  background: transparent !important;
+  border-top: 1px solid var(--color-border);
+}
+
+.mat-expansion-panel {
+  background: var(--color-white) !important;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md) !important;
+  box-shadow: none !important;
+  margin-bottom: var(--space-2);
+
+  &.mat-expanded {
+    border-color: var(--color-black); // Active panel gets black border
+  }
+}
+
+// The Acid Chip
+.mat-mdc-standard-chip {
+  background-color: var(--color-paper) !important;
+
+  &:hover,
+  &.mat-mdc-chip-selected {
+    background-color: var(--color-acid) !important;
+    color: var(--color-black) !important;
+  }
+}
+
+// Dialog
+.mat-mdc-dialog-container {
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-float) !important;
+  border: 1px solid var(--color-border);
+}

@@ -1,0 +1,31 @@
+<div class="entity-selector">
+    <button mat-button [matMenuTriggerFor]="entityMenu" class="entity-button">
+        <mat-icon>business</mat-icon>
+        <span class="entity-name">{{ currentEntity?.name || 'Select Entity' }}</span>
+        <mat-icon>arrow_drop_down</mat-icon>
+    </button>
+
+    <mat-menu #entityMenu="matMenu">
+        <div class="entity-menu-header" mat-menu-item disabled>
+            <strong>Switch Entity</strong>
+        </div>
+
+        <button mat-menu-item *ngFor="let entity of entities" (click)="onEntityChange(entity)"
+            [class.active]="entity.id === currentEntity?.id">
+            <mat-icon [class.active-icon]="entity.id === currentEntity?.id">
+                {{ entity.id === currentEntity?.id ? 'check_circle' : 'radio_button_unchecked' }}
+            </mat-icon>
+            <span class="entity-item">
+                <span class="entity-item-name">{{ entity.name }}</span>
+                <span class="entity-item-role">{{ getUserRole(entity) }}</span>
+            </span>
+        </button>
+
+        <mat-divider></mat-divider>
+
+        <button mat-menu-item *ngIf="canAccessSiteAdmin()" (click)="manageEntities()">
+            <mat-icon>settings</mat-icon>
+            <span>Manage Entities</span>
+        </button>
+    </mat-menu>
+</div>

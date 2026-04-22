@@ -1,0 +1,70 @@
+.page-container {
+    padding: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+
+    h1 {
+        border-bottom: 1px solid var(--color-border);
+        font-size: 24px;
+        font-weight: 500;
+    }
+}
+
+.content-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 24px;
+
+    @media (max-width: 900px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.left-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.form-row {
+    display: flex;
+    gap: 16px;
+
+    mat-form-field {
+        flex: 1;
+    }
+}
+
+.history-card {
+    flex: 1;
+    overflow: hidden;
+}
+
+.table-container {
+    max-height: 400px;
+    overflow: auto;
+}
+
+table {
+    width: 100%;
+}
+
+.notes-cell {
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background: color-mix(in srgb, var(--color-accent-primary) 15%, transparent);
+}
+
+.chart-card {
+    height: 500px;
+}
+
+.chart-content {
+    height: 400px;
+}

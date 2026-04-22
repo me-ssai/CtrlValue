@@ -1,0 +1,127 @@
+<div class="page-container">
+    <div class="page-header">
+        <div class="page-header-left">
+            <h1><mat-icon>account_balance</mat-icon> Accounts</h1>
+            <p class="page-subtitle">View and manage your assets and liabilities</p>
+        </div>
+        <div class="header-actions">
+            <button mat-stroked-button (click)="refreshBalances()" [disabled]="refreshingBalances || loading">
+                <mat-icon [class.spin-icon]="refreshingBalances">refresh</mat-icon>
+                {{ refreshingBalances ? 'Refreshing…' : 'Refresh Balances' }}
+            </button>
+            <button mat-raised-button color="primary" (click)="createAccount()">
+                <mat-icon>add</mat-icon> Add Account
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="loading">
+        <mat-icon class="spin-icon">refresh</mat-icon>
+        <span>Loading accounts...</span>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!loading && accounts.length === 0">
+        <mat-icon>account_balance</mat-icon>
+        <h3>No Accounts Yet</h3>
+        <p>Start tracking your finances by adding your first account.</p>
+        <button mat-raised-button color="primary" (click)="createAccount()">
+            <mat-icon>add</mat-icon> Add Your First Account
+        </button>
+    </div>
+
+    <div *ngIf="!loading && accounts.length > 0">
+
+        <!-- Assets Section -->
+        <div class="accounts-section" *ngIf="assetAccounts.length > 0">
+            <div class="section-header">
+                <div class="section-title-row">
+                    <mat-icon class="section-icon asset-icon">trending_up</mat-icon>
+                    <h2 class="section-title">Assets</h2>
+                    <span class="section-count">{{ assetAccounts.length }}</span>
+                </div>
+            </div>
+            <div class="accounts-grid">
+                <div class="account-card asset-card" *ngFor="let account of assetAccounts"
+                    (click)="openAccount(account.id!)" role="button" tabindex="0"
+                    (keydown.enter)="openAccount(account.id!)">
+
+                    <div class="card-top">
+                        <div class="card-icon asset-bg">
+                            <mat-icon>{{ getAccountIcon(account.accountType!, account.assetClass) }}</mat-icon>
+                        </div>
+                        <div class="card-main">
+                            <div class="card-name">{{ account.name }}</div>
+                            <div class="card-institution">{{ account.institution || 'No institution' }}</div>
+                        </div>
+                        <mat-icon class="card-arrow">chevron_right</mat-icon>
+                    </div>
+
+                    <div class="card-value asset-value">
+                        {{ formatCurrency(account.currentBalance) }}
+                    </div>
+
+                    <div class="card-footer">
+                        <span class="card-chip" *ngIf="account.assetClass">
+                            <mat-icon>category</mat-icon>
+                            {{ account.assetClass }}
+                        </span>
+                        <span class="card-chip" *ngIf="account.liquidityClass">
+                            <mat-icon>water_drop</mat-icon>
+                            {{ account.liquidityClass }}
+                        </span>
+                        <span class="card-chip currency-chip">
+                            {{ account.currency }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Liabilities Section -->
+        <div class="accounts-section mt-4" *ngIf="liabilityAccounts.length > 0">
+            <div class="section-header">
+                <div class="section-title-row">
+                    <mat-icon class="section-icon liability-icon">trending_down</mat-icon>
+                    <h2 class="section-title">Liabilities</h2>
+                    <span class="section-count liability-count">{{ liabilityAccounts.length }}</span>
+                </div>
+            </div>
+            <div class="accounts-grid">
+                <div class="account-card liability-card" *ngFor="let account of liabilityAccounts"
+                    (click)="openAccount(account.id!)" role="button" tabindex="0"
+                    (keydown.enter)="openAccount(account.id!)">
+
+                    <div class="card-top">
+                        <div class="card-icon liability-bg">
+                            <mat-icon>credit_card</mat-icon>
+                        </div>
+                        <div class="card-main">
+                            <div class="card-name">{{ account.name }}</div>
+                            <div class="card-institution">{{ account.institution || 'No institution' }}</div>
+                        </div>
+                        <mat-icon class="card-arrow">chevron_right</mat-icon>
+                    </div>
+
+                    <div class="card-value liability-value">
+                        {{ formatCurrency(account.currentBalance) }}
+                    </div>
+
+                    <div class="card-footer">
+                        <span class="card-chip" *ngIf="account.liquidityClass">
+                            <mat-icon>water_drop</mat-icon>
+                            {{ account.liquidityClass }}
+                        </span>
+                        <span class="card-chip currency-chip">
+                            {{ account.currency }}
+                        </span>
+                        <span class="card-chip" *ngIf="account.creditLimit">
+                            Limit: {{ formatCurrency(account.creditLimit) }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

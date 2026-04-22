@@ -1,0 +1,136 @@
+<h2 mat-dialog-title>Categorize Transaction</h2>
+
+<mat-dialog-content>
+
+    <!-- Transaction context (read-only) -->
+    <div class="txn-context">
+        <span class="txn-description">{{ data.transaction.description || data.transaction.merchant || 'Transaction' }}</span>
+        <span class="txn-amount" [class.inflow]="data.transaction.direction === 'Inflow'"
+              [class.outflow]="data.transaction.direction === 'Outflow'">
+            {{ data.transaction.currency }} {{ data.transaction.amount | number:'1.2-2' }}
+        </span>
+    </div>
+
+    <form [formGroup]="form">
+
+        <!-- Suggestion badge -->
+        <div class="suggestion-banner" *ngIf="showSuggestion && suggestion">
+            <mat-icon class="suggestion-icon">auto_awesome</mat-icon>
+            <span>
+                Suggested: <strong>{{ suggestion.categoryName }}</strong>
+                &middot; matched <em>"{{ suggestion.matchedKeyword }}"</em>
+            </span>
+            <div class="suggestion-actions">
+                <button mat-stroked-button type="button" class="accept-btn" (click)="acceptSuggestion()">
+                    Accept
+                </button>
+                <button mat-icon-button type="button" (click)="dismissSuggestion()" matTooltip="Dismiss">
+                    <mat-icon>close</mat-icon>
+                </button>
+            </div>
+        </div>
+
+        <!-- Category select -->
+        <div class="field-group">
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Category</mat-label>
+                <mat-select formControlName="categoryId" [disabled]="loadingCategories"
+                            (opened)="onCategoryPanelOpened()">
+                    <mat-option class="search-option" disabled>
+                        <mat-icon class="search-icon">search</mat-icon>
+                        <input #categorySearchInput
+                               [formControl]="categorySearchControl"
+                               placeholder="Search categories…"
+                               (click)="$event.stopPropagation()"
+                               (keydown)="$event.stopPropagation()"
+                               class="category-search-input" />
+                    </mat-option>
+                    <mat-option *ngFor="let cat of filteredCategories" [value]="cat.id">
+                        <span class="cat-dot" [style.background]="cat.color || '#9e9e9e'"></span>
+                        {{ cat.name }}
+                        <span class="cat-type-badge">{{ cat.categoryType }}</span>
+                    </mat-option>
+                    <mat-option *ngIf="filteredCategories.length === 0 && !loadingCategories" disabled>
+                        No categories found
+                    </mat-option>
+                </mat-select>
+                <mat-hint *ngIf="loadingCategories">Loading categories…</mat-hint>
+                <mat-error *ngIf="form.get('categoryId')?.hasError('required')">
+                    Please select a category
+                </mat-error>
+            </mat-form-field>
+
+            <!-- Inline new-category trigger -->
+            <button mat-button type="button" class="new-cat-btn" (click)="toggleNewCategoryPanel()">
+                <mat-icon>{{ showNewCategoryPanel ? 'expand_less' : 'add' }}</mat-icon>
+                {{ showNewCategoryPanel ? 'Cancel' : 'New Category' }}
+            </button>
+        </div>
+
+        <!-- Inline new-category panel -->
+        <div class="new-category-panel" *ngIf="showNewCategoryPanel" [formGroup]="newCategoryForm">
+            <mat-divider></mat-divider>
+            <p class="panel-heading">
+                <mat-icon>create_new_folder</mat-icon> New Category
+            </p>
+            <div class="new-cat-fields">
+                <mat-form-field appearance="outline" class="grow">
+                    <mat-label>Name</mat-label>
+                    <input matInput formControlName="name" maxlength="100" />
+                    <mat-error *ngIf="newCategoryForm.get('name')?.hasError('required')">Required</mat-error>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                    <mat-label>Type</mat-label>
+                    <mat-select formControlName="categoryType">
+                        <mat-option *ngFor="let t of categoryTypes" [value]="t.value">{{ t.label }}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            <div class="new-cat-actions">
+                <button mat-flat-button color="primary" type="button"
+                        [disabled]="savingNewCategory"
+                        (click)="saveNewCategory()">
+                    <mat-spinner *ngIf="savingNewCategory" diameter="16"></mat-spinner>
+                    Save Category
+                </button>
+                <button mat-button type="button" (click)="toggleNewCategoryPanel()">Cancel</button>
+            </div>
+            <mat-divider></mat-divider>
+        </div>
+
+        <!-- Keyword rule toggle -->
+        <div class="rule-section">
+            <mat-slide-toggle formControlName="saveAsRule" color="primary">
+                Save as keyword rule for future transactions
+            </mat-slide-toggle>
+
+            <!-- Keyword fields (shown when toggle is on) -->
+            <div class="keyword-fields" *ngIf="saveAsRule">
+                <mat-form-field appearance="outline" class="grow">
+                    <mat-label>Keyword</mat-label>
+                    <input matInput formControlName="keyword" />
+                    <mat-hint>Matches against transaction description &amp; merchant</mat-hint>
+                    <mat-error *ngIf="form.get('keyword')?.hasError('required')">Keyword is required</mat-error>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                    <mat-label>Match Type</mat-label>
+                    <mat-select formControlName="matchType">
+                        <mat-option *ngFor="let mt of matchTypes" [value]="mt.value">{{ mt.label }}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+        </div>
+
+    </form>
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="cancel()" [disabled]="saving">Cancel</button>
+    <button mat-flat-button color="primary" type="button"
+            (click)="onSave()"
+            [disabled]="saving || loadingCategories">
+        <mat-spinner *ngIf="saving" diameter="18" class="btn-spinner"></mat-spinner>
+        {{ saving ? 'Saving…' : 'Save' }}
+    </button>
+</mat-dialog-actions>

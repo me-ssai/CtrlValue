@@ -1,0 +1,345 @@
+<div class="admin-shell">
+    <div class="admin-header">
+        <h1>Super Admin Dashboard</h1>
+        <p class="subtitle">Global management across all tenants and users</p>
+    </div>
+
+    <!-- Tab nav -->
+    <div class="tab-bar">
+        <button [class.active]="activeTab === 'users'" (click)="activeTab = 'users'">Users</button>
+        <button [class.active]="activeTab === 'tenants'" (click)="activeTab = 'tenants'">Tenants</button>
+        <button [class.active]="activeTab === 'integrations'" (click)="activeTab = 'integrations'">Platform Integrations</button>
+        <button [class.active]="activeTab === 'agent'" (click)="activeTab = 'agent'; onAgentTabSelect()">Agent Settings</button>
+    </div>
+
+    <!-- Users Tab -->
+    <div *ngIf="activeTab === 'users'" class="tab-content">
+        <div class="search-row">
+            <input [(ngModel)]="userSearch" placeholder="Search by name, email or tenant..." class="search-input" />
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Tenant</th>
+                        <th>Entities</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let user of filteredUsers">
+                        <td>{{ user.firstName }} {{ user.lastName }}</td>
+                        <td>{{ user.email }}</td>
+                        <td><span class="badge tenant">{{ user.tenantId }}</span></td>
+                        <td>
+                            <span class="badge entity" *ngFor="let e of user.entities">{{ e.entityName }}</span>
+                            <em *ngIf="user.entities.length === 0" class="muted">None</em>
+                        </td>
+                        <td>
+                            <select [(ngModel)]="user.role" (change)="updateRole(user)" class="role-select">
+                                <option value="User">User</option>
+                                <option value="SiteAdmin">SiteAdmin</option>
+                                <option value="SuperAdmin">SuperAdmin</option>
+                            </select>
+                        </td>
+                        <td class="action-cell">
+                            <button class="btn-sm btn-secondary" (click)="resetPassword(user)">Reset</button>
+                            <button class="btn-sm btn-warning" (click)="impersonate(user)">Impersonate</button>
+                            <button class="btn-sm btn-danger" (click)="deleteUser(user)">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Tenants Tab -->
+    <div *ngIf="activeTab === 'tenants'" class="tab-content">
+        <div class="create-row">
+            <input [(ngModel)]="newTenantName" placeholder="Tenant name" class="search-input" style="max-width:200px" />
+            <input [(ngModel)]="newTenantEmail" placeholder="Contact email" class="search-input"
+                style="max-width:220px" />
+            <button class="btn-primary" (click)="createTenant()">+ Create Tenant</button>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Created</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let t of tenants">
+                        <td>{{ t.name }}</td>
+                        <td>{{ t.contactEmail }}</td>
+                        <td>{{ t.createdAt | date:'mediumDate' }}</td>
+                        <td><span class="badge" [class.active-badge]="t.isActive"
+                                [class.inactive-badge]="!t.isActive">{{ t.isActive ? 'Active' : 'Inactive' }}</span>
+                        </td>
+                        <td class="action-cell">
+                            <button class="btn-sm" [class.btn-danger]="t.isActive" [class.btn-primary]="!t.isActive"
+                                (click)="toggleTenant(t)">
+                                {{ t.isActive ? 'Deactivate' : 'Activate' }}
+                            </button>
+                            <button class="btn-sm btn-danger" (click)="deleteTenant(t)">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Platform Integrations Tab -->
+    <div *ngIf="activeTab === 'integrations'" class="tab-content">
+        <h2 class="section-title">Platform API Keys</h2>
+        <p class="section-desc">These keys are used as a fallback when users haven't configured their own API keys.
+            User keys always take priority.</p>
+
+        <div class="price-fetch-section">
+            <div class="price-fetch-info">
+                <strong>Price Fetch</strong>
+                <span>Prices refresh automatically every 24 hours. Trigger a manual fetch to update now.</span>
+            </div>
+            <button class="btn-sm btn-primary" (click)="triggerPriceFetch()" [disabled]="priceFetchRunning">
+                {{ priceFetchRunning ? 'Fetching...' : 'Fetch Prices Now' }}
+            </button>
+        </div>
+
+        <div class="integration-cards">
+            <div *ngFor="let type of integrationTypes" class="integration-card">
+                <div class="integration-header">
+                    <div>
+                        <span class="integration-name">{{ integrationLabels[type] }}</span>
+                        <span class="integration-status has-key" *ngIf="platformIntegrations[type]?.hasApiKey">Key saved</span>
+                        <span class="integration-status no-key" *ngIf="!platformIntegrations[type]?.hasApiKey">No key</span>
+                    </div>
+                    <label class="toggle-label">
+                        <input type="checkbox" [(ngModel)]="integrationForms[type].isEnabled">
+                        Enable as fallback
+                    </label>
+                </div>
+
+                <p class="integration-desc">{{ integrationDescriptions[type] }}</p>
+
+                <div class="integration-meta" *ngIf="platformIntegrations[type]?.lastUsedAt">
+                    Last used: {{ platformIntegrations[type].lastUsedAt | date:'short' }}
+                </div>
+
+                <div class="integration-key-row">
+                    <input [type]="integrationForms[type].showKey ? 'text' : 'password'"
+                           [(ngModel)]="integrationForms[type].apiKey"
+                           class="key-input"
+                           [placeholder]="platformIntegrations[type]?.hasApiKey ? '••••••••••••••••' : 'Paste API key here'">
+                    <button class="btn-icon" (click)="integrationForms[type].showKey = !integrationForms[type].showKey"
+                            [title]="integrationForms[type].showKey ? 'Hide' : 'Show'">
+                        {{ integrationForms[type].showKey ? '🙈' : '👁' }}
+                    </button>
+                </div>
+
+                <div class="integration-actions">
+                    <button class="btn-sm btn-primary" (click)="savePlatformKey(type)">Save</button>
+                    <button class="btn-sm btn-danger" *ngIf="platformIntegrations[type]?.hasApiKey"
+                            (click)="deletePlatformKey(type)">Remove Key</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Agent Settings Tab -->
+    <div *ngIf="activeTab === 'agent'" class="tab-content">
+
+        <!-- Provider Selection -->
+        <div class="section-card">
+            <div class="section-header">
+                <h3>AI Provider</h3>
+                <p class="section-desc">Select which AI provider powers CtrlValue Agent chat and macro insights.</p>
+            </div>
+            <div class="provider-row">
+                <label class="field-label">Default Provider</label>
+                <select [(ngModel)]="agentSelectedProvider" class="form-select">
+                    <option *ngFor="let p of providerOptions" [value]="p">{{ p }}</option>
+                </select>
+                <button class="btn-sm btn-primary" (click)="saveAgentProvider()" [disabled]="agentSettingsSaving">
+                    {{ agentSettingsSaving ? 'Saving...' : 'Save' }}
+                </button>
+            </div>
+            <p class="section-desc" style="margin-top: 8px;">
+                Set the API key for the selected provider in the <strong>Platform Integrations</strong> tab
+                (OPENAI or ANTHROPIC entry).
+            </p>
+        </div>
+
+        <!-- Global Feature Flags -->
+        <div class="section-card">
+            <div class="section-header">
+                <h3>Global Section Flags</h3>
+                <p class="section-desc">Enable or disable agent sections for all users. User-level overrides take precedence.</p>
+            </div>
+
+            <div *ngIf="agentFlagsLoading" class="loading-state">Loading flags...</div>
+
+            <table *ngIf="!agentFlagsLoading && agentFlags.length > 0">
+                <thead>
+                    <tr>
+                        <th>Section</th>
+                        <th>Key</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let flag of agentFlags">
+                        <td><strong>{{ flag.name }}</strong></td>
+                        <td><code>{{ flag.key }}</code></td>
+                        <td>
+                            <span class="badge" [class.badge-active]="flag.isEnabled" [class.badge-inactive]="!flag.isEnabled">
+                                {{ flag.isEnabled ? 'Enabled' : 'Disabled' }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn-sm" [class.btn-danger]="flag.isEnabled" [class.btn-primary]="!flag.isEnabled"
+                                    (click)="toggleAgentFlag(flag)">
+                                {{ flag.isEnabled ? 'Disable' : 'Enable' }}
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- User Overrides -->
+        <div class="section-card">
+            <div class="section-header">
+                <h3>User-Level Overrides</h3>
+                <p class="section-desc">Enable agent sections for specific users (paste User ID).</p>
+            </div>
+            <div class="search-row">
+                <input [(ngModel)]="agentUserSearchId" placeholder="User ID (GUID)..." class="search-input" />
+                <button class="btn-sm btn-primary" (click)="loadUserOverrides()">Load Overrides</button>
+            </div>
+
+            <div *ngIf="agentUserOverrides.length > 0" style="margin-top: 12px;">
+                <table>
+                    <thead>
+                        <tr><th>Section</th><th>Key</th><th>Override</th><th>Action</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let o of agentUserOverrides">
+                            <td>{{ o.flagName }}</td>
+                            <td><code>{{ o.flagKey }}</code></td>
+                            <td>
+                                <span class="badge" [class.badge-active]="o.isEnabled" [class.badge-inactive]="!o.isEnabled">
+                                    {{ o.isEnabled ? 'Enabled' : 'Disabled' }}
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn-sm" [class.btn-danger]="o.isEnabled" [class.btn-primary]="!o.isEnabled"
+                                        (click)="toggleUserOverride(o)">
+                                    {{ o.isEnabled ? 'Disable' : 'Enable' }}
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Weekly Digest Approval -->
+        <div class="section-card">
+            <div class="section-header">
+                <h3>Weekly Digest Approval</h3>
+                <p class="section-desc">
+                    Digest emails are generated weekly and require approval before sending.
+                    Each digest contains a summary of the user's financial position.
+                </p>
+                <button class="btn-sm btn-primary" (click)="loadPendingDigests()" [disabled]="pendingDigestsLoading">
+                    {{ pendingDigestsLoading ? 'Loading...' : 'Refresh' }}
+                </button>
+            </div>
+
+            <div *ngIf="!pendingDigestsLoading && pendingDigests.length === 0" class="loading-state">
+                No pending digests.
+            </div>
+
+            <table *ngIf="pendingDigests.length > 0">
+                <thead>
+                    <tr>
+                        <th>Week</th>
+                        <th>Subject</th>
+                        <th>Entity ID</th>
+                        <th>Generated</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let d of pendingDigests">
+                        <td><strong>{{ d.weekKey }}</strong></td>
+                        <td>{{ d.subject }}</td>
+                        <td><code>{{ d.entityId.substring(0, 8) }}...</code></td>
+                        <td>{{ d.createdAt | date:'short' }}</td>
+                        <td>
+                            <button class="btn-sm" (click)="previewDigest = d" style="margin-right:4px;">Preview</button>
+                            <button class="btn-sm btn-primary" (click)="approveDigest(d)" style="margin-right:4px;">Approve</button>
+                            <button class="btn-sm btn-danger" (click)="rejectDigest(d)">Reject</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Digest Preview -->
+            <div *ngIf="previewDigest" class="digest-preview">
+                <div class="digest-preview-header">
+                    <strong>Preview: {{ previewDigest.subject }}</strong>
+                    <button class="btn-sm" (click)="previewDigest = null">Close</button>
+                </div>
+                <div class="digest-preview-body" [innerHTML]="safeHtml(previewDigest.htmlBody)"></div>
+            </div>
+        </div>
+
+        <!-- Audit Log -->
+        <div class="section-card">
+            <div class="section-header">
+                <h3>Agent Audit Log</h3>
+                <p class="section-desc">Immutable record of every LLM request made by the agent.</p>
+                <button class="btn-sm btn-primary" (click)="loadAgentAuditLogs()" [disabled]="agentAuditLoading">
+                    {{ agentAuditLoading ? 'Loading...' : 'Load Logs' }}
+                </button>
+            </div>
+
+            <table *ngIf="agentAuditLogs.length > 0">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>User ID</th>
+                        <th>Type</th>
+                        <th>Provider</th>
+                        <th>Model</th>
+                        <th>Tokens</th>
+                        <th>Safety</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let log of agentAuditLogs">
+                        <td>{{ log.createdAt | date:'short' }}</td>
+                        <td><code>{{ log.userId.substring(0, 8) }}...</code></td>
+                        <td>{{ log.requestType }}</td>
+                        <td>{{ log.provider }}</td>
+                        <td>{{ log.model }}</td>
+                        <td>{{ log.totalTokens ?? '—' }}</td>
+                        <td><span class="badge badge-active">{{ log.safetyDecision ?? '—' }}</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <div *ngIf="statusMessage" class="status-toast" [class.error]="isError">{{ statusMessage }}</div>
+</div>

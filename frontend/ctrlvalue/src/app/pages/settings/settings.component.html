@@ -1,0 +1,281 @@
+﻿<div class="page-container" style="max-width: 800px;">
+    <div class="page-header">
+        <h1><mat-icon>settings</mat-icon> Settings</h1>
+    </div>
+
+    <!-- Appearance Section -->
+    <mat-card class="mb-4">
+        <mat-card-header>
+            <mat-card-title>Appearance</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <mat-icon>{{ themeService.isDarkMode ? 'dark_mode' : 'light_mode' }}</mat-icon>
+                    <div>
+                        <div class="setting-label">Theme</div>
+                        <div class="setting-description">{{ themeService.isDarkMode ? 'Dark' : 'Light' }} mode</div>
+                    </div>
+                </div>
+                <mat-slide-toggle [checked]="themeService.isDarkMode" (change)="toggleTheme()" color="primary">
+                </mat-slide-toggle>
+            </div>
+        </mat-card-content>
+    </mat-card>
+
+    <!-- Currency Section -->
+    <mat-card class="mb-4">
+        <mat-card-header>
+            <mat-card-title>Currency</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <div class="setting-row">
+                <div class="setting-info">
+                    <mat-icon>attach_money</mat-icon>
+                    <div>
+                        <div class="setting-label">Default Currency</div>
+                        <div class="setting-description">Used for displaying amounts</div>
+                    </div>
+                </div>
+                <mat-form-field appearance="outline" class="currency-field">
+                    <mat-select [(value)]="selectedCurrency" (selectionChange)="onCurrencyChange($event.value)">
+                        <mat-option *ngFor="let currency of currencies" [value]="currency">
+                            {{ currency }}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+        </mat-card-content>
+    </mat-card>
+
+    <!-- Profile Section -->
+    <mat-card class="mb-4">
+        <mat-card-header>
+            <mat-card-title>Profile</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <form [formGroup]="profileForm" (ngSubmit)="updateProfile()" class="settings-form">
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>First Name</mat-label>
+                    <input matInput formControlName="firstName" required>
+                    <mat-error *ngIf="profileForm.get('firstName')?.hasError('required')">
+                        First name is required
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Last Name</mat-label>
+                    <input matInput formControlName="lastName" required>
+                    <mat-error *ngIf="profileForm.get('lastName')?.hasError('required')">
+                        Last name is required
+                    </mat-error>
+                </mat-form-field>
+
+                <div class="form-actions">
+                    <button mat-raised-button color="primary" type="submit"
+                        [disabled]="profileLoading || profileForm.invalid">
+                        <mat-icon *ngIf="profileLoading">refresh</mat-icon>
+                        <mat-icon *ngIf="!profileLoading">save</mat-icon>
+                        Save Profile
+                    </button>
+                </div>
+            </form>
+        </mat-card-content>
+    </mat-card>
+
+    <!-- Security Section -->
+    <mat-card class="mb-4">
+        <mat-card-header>
+            <mat-card-title>Security</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+
+            <!-- Change Password -->
+            <p class="subsection-label">Change Password</p>
+
+            <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" class="settings-form">
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Current Password</mat-label>
+                    <input matInput type="password" formControlName="currentPassword" required>
+                    <mat-error *ngIf="passwordForm.get('currentPassword')?.hasError('required')">
+                        Current password is required
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>New Password</mat-label>
+                    <input matInput type="password" formControlName="newPassword" required>
+                    <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('required')">
+                        New password is required
+                    </mat-error>
+                    <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('minlength')">
+                        Password must be at least 6 characters
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Confirm New Password</mat-label>
+                    <input matInput type="password" formControlName="confirmPassword" required>
+                    <mat-error *ngIf="passwordForm.get('confirmPassword')?.hasError('required')">
+                        Please confirm your password
+                    </mat-error>
+                </mat-form-field>
+
+                <div class="form-actions">
+                    <button mat-raised-button color="primary" type="submit"
+                        [disabled]="passwordLoading || passwordForm.invalid">
+                        <mat-icon *ngIf="passwordLoading">refresh</mat-icon>
+                        <mat-icon *ngIf="!passwordLoading">lock</mat-icon>
+                        Change Password
+                    </button>
+                </div>
+            </form>
+        </mat-card-content>
+    </mat-card>
+
+    <!-- Manage Workspaces Section -->
+    <mat-card class="mb-4">
+        <mat-card-header>
+            <mat-card-title>
+                <mat-icon style="vertical-align:middle;margin-right:8px">business</mat-icon>
+                Manage Workspaces
+            </mat-card-title>
+            <mat-card-subtitle>Your financial profiles  each has its own accounts, transactions and reports</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+
+            <!-- Loading state -->
+            <div *ngIf="entitiesLoading" style="text-align:center;padding:24px">
+                <mat-spinner diameter="32" style="margin:auto"></mat-spinner>
+            </div>
+
+            <!-- Entity list -->
+            <div *ngFor="let entity of entities" class="entity-item">
+
+                <!-- View mode -->
+                <div *ngIf="editingEntityId !== entity.id" class="entity-row">
+                    <div class="entity-info">
+                        <mat-icon class="entity-icon">folder</mat-icon>
+                        <div>
+                            <div class="entity-name">{{ entity.name }}</div>
+                            <span class="entity-currency-badge">{{ entity.baseCurrency }}</span>
+                            <span class="entity-currency-badge" style="margin-left:4px">{{ entity.country }}</span>
+                        </div>
+                    </div>
+                    <div class="entity-actions">
+                        <button mat-icon-button matTooltip="View users" (click)="toggleEntityUsers(entity.id)">
+                            <mat-icon>{{ expandedEntityId === entity.id ? 'expand_less' : 'group' }}</mat-icon>
+                        </button>
+                        <button mat-icon-button matTooltip="Edit workspace" (click)="startEditEntity(entity)">
+                            <mat-icon>edit</mat-icon>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Edit mode -->
+                <div *ngIf="editingEntityId === entity.id" class="entity-edit-row">
+                    <mat-form-field appearance="outline" class="entity-edit-field">
+                        <mat-label>Workspace Name</mat-label>
+                        <input matInput [(ngModel)]="editingEntityName" />
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="entity-currency-field">
+                        <mat-label>Currency</mat-label>
+                        <mat-select [(value)]="editingEntityCurrency">
+                            <mat-option *ngFor="let c of currencies" [value]="c">{{ c }}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="entity-currency-field">
+                        <mat-label>Country</mat-label>
+                        <mat-select [(value)]="editingEntityCountry">
+                            <mat-option *ngFor="let country of supportedCountries" [value]="country.code">
+                                {{ country.label }}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                    <button mat-flat-button color="primary" (click)="saveEditEntity(entity)">Save</button>
+                    <button mat-button (click)="cancelEditEntity()">Cancel</button>
+                </div>
+
+                <!-- Users panel -->
+                <div *ngIf="expandedEntityId === entity.id" class="entity-users-panel">
+                    <div *ngIf="!entityUsers[entity.id]" style="color:#9ca3af;font-size:0.85rem;padding:8px 0">Loading users...</div>
+                    <div *ngIf="entityUsers[entity.id]?.length === 0" style="color:#9ca3af;font-size:0.85rem;padding:8px 0">No other users have access to this workspace.</div>
+                    <div *ngFor="let user of entityUsers[entity.id]" class="entity-user-row">
+                        <mat-icon style="font-size:18px;color:#6b7280">person</mat-icon>
+                        <span class="entity-user-email">{{ user.userEmail }}</span>
+                        <mat-chip [style.background]="user.role === 'OWNER' ? '#dcfce7' : '#e0e7ff'"
+                                  [style.color]="user.role === 'OWNER' ? '#16a34a' : '#4338ca'">{{ user.role }}</mat-chip>
+                        <button mat-icon-button matTooltip="Remove user" color="warn"
+                            *ngIf="user.role !== 'OWNER'"
+                            (click)="removeUserFromEntity(entity.id, user.userId, user.userEmail)">
+                            <mat-icon>person_remove</mat-icon>
+                        </button>
+                    </div>
+                </div>
+
+                <mat-divider></mat-divider>
+            </div>
+
+            <!-- Empty state -->
+            <div *ngIf="!entitiesLoading && entities.length === 0" style="text-align:center;padding:32px;color:#9ca3af">
+                <mat-icon style="font-size:48px;width:48px;height:48px;color:#d1d5db">business</mat-icon>
+                <p>No workspaces found. Create one below.</p>
+            </div>
+
+            <!-- New workspace form -->
+            <div *ngIf="showNewEntityForm" class="entity-edit-row" style="margin-top:16px">
+                <mat-form-field appearance="outline" class="entity-edit-field">
+                    <mat-label>Workspace Name</mat-label>
+                    <input matInput [(ngModel)]="newEntityName" placeholder="e.g. Personal Finances" />
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="entity-currency-field">
+                    <mat-label>Currency</mat-label>
+                    <mat-select [(value)]="newEntityCurrency">
+                        <mat-option *ngFor="let c of currencies" [value]="c">{{ c }}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="entity-currency-field">
+                    <mat-label>Country</mat-label>
+                    <mat-select [(value)]="newEntityCountry">
+                        <mat-option *ngFor="let country of supportedCountries" [value]="country.code">
+                            {{ country.label }}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <button mat-flat-button color="primary" (click)="createEntity()">Create</button>
+                <button mat-button (click)="showNewEntityForm = false">Cancel</button>
+            </div>
+
+            <div style="margin-top:16px">
+                <button mat-stroked-button color="primary" (click)="showNewEntityForm = !showNewEntityForm" *ngIf="!showNewEntityForm">
+                    <mat-icon>add</mat-icon> New Workspace
+                </button>
+            </div>
+
+        </mat-card-content>
+    </mat-card>
+
+    <!-- Integrations Section -->
+    <mat-card class="mb-4">
+        <mat-card-header>
+            <mat-card-title>Integrations</mat-card-title>
+            <mat-card-subtitle>Connect banks, stock price feeds, and metals data per workspace</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+            <app-integrations></app-integrations>
+        </mat-card-content>
+    </mat-card>
+
+    <mat-card class="mb-4">
+        <mat-card-header>
+            <mat-card-title>Setup Wizard</mat-card-title>
+            <mat-card-subtitle>Re-run the setup wizard to review or add accounts and investments</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+            <button mat-stroked-button color="primary" (click)="runSetupWizard()">
+                <mat-icon>rocket_launch</mat-icon> Re-run Setup Wizard
+            </button>
+        </mat-card-content>
+    </mat-card>
+
+</div>

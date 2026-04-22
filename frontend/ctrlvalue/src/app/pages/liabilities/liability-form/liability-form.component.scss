@@ -1,0 +1,94 @@
+.form-page {
+    padding: 2rem;
+    max-width: 600px;
+    margin: 0 auto;
+
+    .form-header {
+        margin-bottom: 2rem;
+
+        h1 {
+            font-size: 1.75rem;
+            color: var(--color-text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 0;
+
+            i {
+                color: var(--color-accent-danger);
+            }
+        }
+    }
+
+    .liability-form {
+        background: var(--color-bg-card);
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+        .form-group {
+            margin-bottom: 1.5rem;
+
+            label {
+                display: block;
+                margin-bottom: 0.5rem;
+                font-weight: 600;
+                color: var(--color-text-primary);
+                font-size: 0.875rem;
+            }
+
+            input,
+            select,
+            textarea {
+                width: 100%;
+                padding: 0.75rem;
+                border: 2px solid var(--color-border);
+                border-radius: 8px;
+                font-size: 1rem;
+                transition: all 0.2s;
+                background: var(--color-bg-primary);
+                color: var(--color-text-primary);
+
+                &:focus {
+                    outline: none;
+                    color: var(--color-accent-primary);
+                    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent-primary) 10%, transparent);
+                }
+
+                &.invalid {
+                    border-color: var(--color-accent-danger);
+                }
+
+                &::placeholder {
+                    color: var(--color-text-secondary);
+                }
+            }
+
+            textarea {
+                resize: vertical;
+                font-family: inherit;
+            }
+
+            .error-text {
+                color: var(--color-accent-danger);
+                font-size: 0.75rem;
+                margin-top: 0.25rem;
+            }
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+    }
+}

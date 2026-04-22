@@ -1,0 +1,86 @@
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - frontend/**
+
+pool:
+  name: Default   # Use your self-hosted agent
+
+variables:
+  - group: ctrlvalue-prod-vars
+  - name: workingDir
+    value: frontend/ctrlvalue
+
+steps:
+  # ── Install Node 20 ──────────────────────────────────────────────────────────
+  - task: NodeTool@0
+    displayName: Install Node 20
+    inputs:
+      versionSpec: '20.x'
+
+  # ── Install dependencies ──────────────────────────────────────────────────────
+  - script: npm ci
+    displayName: Install npm dependencies
+    workingDirectory: $(workingDir)
+
+  # ── Dependency Vulnerability Scan ────────────────────────────────────────────
+  - script: npm audit --audit-level=high
+    displayName: Check for vulnerable npm packages
+    workingDirectory: $(workingDir)
+    continueOnError: false
+
+  # ── SAST — Semgrep ───────────────────────────────────────────────────────────
+  # TODO: Re-enable once Semgrep PATH issues on the self-hosted Windows agent are resolved.
+  # - task: PowerShell@2
+  #   displayName: 'Verify Python'
+  #   inputs:
+  #     targetType: 'inline'
+  #     script: |
+  #       python --version
+  #       pip --version
+  #
+  # - task: PowerShell@2
+  #   displayName: 'Install Semgrep'
+  #   inputs:
+  #     targetType: 'inline'
+  #     script: |
+  #       python -m pip install --upgrade pip
+  #       python -m pip uninstall -y semgrep
+  #       python -m pip install --no-cache-dir semgrep
+  #       semgrep --version
+  #
+  # - task: PowerShell@2
+  #   displayName: 'Run Semgrep'
+  #   inputs:
+  #     targetType: 'inline'
+  #     script: |
+  #       semgrep scan --config auto --severity ERROR --error --json --output semgrep.json .
+
+  # ── Build Angular (production) ────────────────────────────────────────────────
+  - script: npx ng build --configuration production
+    displayName: Build Angular app (production)
+    workingDirectory: $(workingDir)
+
+  # ── Build Angular (demo) ──────────────────────────────────────────────────────
+  - script: npx ng build --configuration demo
+    displayName: Build Angular app (demo)
+    workingDirectory: $(workingDir)
+
+  # ── Deploy production to Azure Static Web Apps ────────────────────────────────
+  # Requires AZURE_STATIC_WEB_APPS_API_TOKEN pipeline variable.
+  # Get it from: Azure Portal → Static Web Apps → Manage deployment token
+  - script: |
+      npx @azure/static-web-apps-cli deploy ./dist/ctrlvalue/browser --deployment-token $(AZURE_STATIC_WEB_APPS_API_TOKEN) --env production
+    displayName: Deploy to Static Web Apps — production
+    workingDirectory: $(workingDir)
+
+  # ── Deploy demo to separate Azure Static Web Apps ─────────────────────────────
+  # Requires AZURE_STATIC_WEB_APPS_API_TOKEN_DEMO pipeline variable.
+  # Get it from: Azure Portal → (demo SWA) → Manage deployment token
+  - script: |
+      npx @azure/static-web-apps-cli deploy ./dist/ctrlvalue-demo/browser --deployment-token $(AZURE_STATIC_WEB_APPS_API_TOKEN_DEMO) --env production
+    displayName: Deploy to Static Web Apps — demo
+    workingDirectory: $(workingDir)
