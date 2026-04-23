@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatChipsModule } from '@angular/material/chips';
@@ -28,15 +28,13 @@ import { Account, AccountKeywordRule, KeywordMatchType } from '../../../models/a
   styleUrls: ['./account-keywords.component.scss']
 })
 export class AccountKeywordsComponent implements OnInit {
+  private keywordService = inject(AccountKeywordRuleService);
+  private snackBar = inject(MatSnackBar);
+
   @Input() account!: Account;
   keywords: AccountKeywordRule[] = [];
-  newKeyword: string = '';
+  newKeyword = '';
   loading = false;
-
-  constructor(
-    private keywordService: AccountKeywordRuleService,
-    private snackBar: MatSnackBar
-  ) {}
 
   ngOnInit(): void {
     this.loadKeywords();

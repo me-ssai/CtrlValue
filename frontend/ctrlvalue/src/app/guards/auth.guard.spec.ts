@@ -10,7 +10,7 @@ describe('authGuard', () => {
     function createGuardResult(
         isAuthenticated: boolean,
         isOnboardingComplete: boolean,
-        targetPath: string = 'dashboard'
+        targetPath = 'dashboard'
     ) {
         authServiceSpy = jasmine.createSpyObj('AuthService', [], {
             isAuthenticated,

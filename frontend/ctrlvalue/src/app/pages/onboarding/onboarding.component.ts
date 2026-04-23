@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -60,6 +60,13 @@ interface AddedAccount {
     styleUrls: ['./onboarding.component.scss']
 })
 export class OnboardingComponent implements OnInit {
+    private fb = inject(FormBuilder);
+    private authService = inject(AuthService);
+    private entityService = inject(EntityService);
+    private financeService = inject(FinanceService);
+    private router = inject(Router);
+    private snackBar = inject(MatSnackBar);
+
     @ViewChild('stepper') stepper!: MatStepper;
 
     // Step 1 — Welcome
@@ -112,14 +119,7 @@ export class OnboardingComponent implements OnInit {
     currentUser = this.authService.currentUser;
     currencies = ['AUD', 'USD', 'EUR', 'GBP', 'NZD', 'CAD', 'JPY', 'SGD', 'HKD', 'CHF'];
 
-    constructor(
-        private fb: FormBuilder,
-        private authService: AuthService,
-        private entityService: EntityService,
-        private financeService: FinanceService,
-        private router: Router,
-        private snackBar: MatSnackBar
-    ) {
+    constructor() {
         const entity = this.entityService.currentEntity;
 
         this.workspaceForm = this.fb.group({

@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -37,6 +37,13 @@ export interface BudgetDialogData {
   styleUrl: './budget-form.component.scss'
 })
 export class BudgetFormComponent implements OnInit {
+  private fb = inject(FormBuilder);
+  private budgetService = inject(BudgetService);
+  private financeService = inject(FinanceService);
+  private dialogRef = inject<MatDialogRef<BudgetFormComponent>>(MatDialogRef);
+  private snackBar = inject(MatSnackBar);
+  data = inject<BudgetDialogData>(MAT_DIALOG_DATA);
+
   budgetForm: FormGroup;
   isEditMode = false;
   budgetId: string | null = null;
@@ -44,14 +51,7 @@ export class BudgetFormComponent implements OnInit {
   loading = false;
   periodTypes = ['MONTHLY', 'QUARTERLY', 'ANNUAL'];
 
-  constructor(
-    private fb: FormBuilder,
-    private budgetService: BudgetService,
-    private financeService: FinanceService,
-    private dialogRef: MatDialogRef<BudgetFormComponent>,
-    private snackBar: MatSnackBar,
-    @Inject(MAT_DIALOG_DATA) public data: BudgetDialogData
-  ) {
+  constructor() {
     this.budgetForm = this.fb.group({
       categoryId: ['', Validators.required],
       periodType: ['MONTHLY', Validators.required],

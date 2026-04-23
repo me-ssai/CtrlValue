@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
@@ -22,15 +22,16 @@ import { firstValueFrom } from 'rxjs';
     styleUrls: ['./delete-account-confirm-dialog.component.scss']
 })
 export class DeleteAccountConfirmDialogComponent implements OnInit {
+    dialogRef = inject<MatDialogRef<DeleteAccountConfirmDialogComponent>>(MatDialogRef);
+    data = inject<{
+    accountId: string;
+    accountName: string;
+}>(MAT_DIALOG_DATA);
+    private finance = inject(FinanceService);
+
     loading = true;
     error: string | null = null;
     impact: AccountDeletionImpactDto | null = null;
-
-    constructor(
-        public dialogRef: MatDialogRef<DeleteAccountConfirmDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: { accountId: string; accountName: string },
-        private finance: FinanceService
-    ) { }
 
     get deleteDisabled(): boolean {
         return this.loading || !!this.error || !this.impact;

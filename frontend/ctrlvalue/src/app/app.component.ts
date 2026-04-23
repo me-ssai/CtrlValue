@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Router } from '@angular/router';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -14,15 +14,13 @@ import { IdleTimeoutService } from './services/idle-timeout.service';
     template: `<router-outlet></router-outlet>`
 })
 export class AppComponent implements OnInit, OnDestroy {
-    private subs = new Subscription();
+    private themeService = inject(ThemeService);
+    private authService = inject(AuthService);
+    private idleService = inject(IdleTimeoutService);
+    private router = inject(Router);
+    private snackBar = inject(MatSnackBar);
 
-    constructor(
-        private themeService: ThemeService,
-        private authService: AuthService,
-        private idleService: IdleTimeoutService,
-        private router: Router,
-        private snackBar: MatSnackBar
-    ) { }
+    private subs = new Subscription();
 
     ngOnInit(): void {
         if (this.authService.isAuthenticated) {

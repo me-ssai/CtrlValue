@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -30,6 +30,11 @@ interface PlatformIntegrationForm {
     styleUrls: ['./super-admin.component.css']
 })
 export class SuperAdminComponent implements OnInit {
+    private adminService = inject(AdminService);
+    private http = inject(HttpClient);
+    private agentService = inject(AgentService);
+    private sanitizer = inject(DomSanitizer);
+
     activeTab: 'users' | 'tenants' | 'integrations' | 'agent' = 'users';
 
     // ── Agent feature flags ──
@@ -82,13 +87,6 @@ export class SuperAdminComponent implements OnInit {
     statusMessage = '';
     isError = false;
     priceFetchRunning = false;
-
-    constructor(
-        private adminService: AdminService,
-        private http: HttpClient,
-        private agentService: AgentService,
-        private sanitizer: DomSanitizer
-    ) { }
 
     safeHtml(html: string): SafeHtml {
         return this.sanitizer.bypassSecurityTrustHtml(html);

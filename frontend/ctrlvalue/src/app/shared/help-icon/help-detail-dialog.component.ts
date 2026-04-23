@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatDialogModule, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -35,6 +35,9 @@ import { MatIconModule } from '@angular/material/icon';
         .help-body { line-height: 1.6; color: var(--color-text-secondary); white-space: pre-wrap; }
     `]
 })
-export class HelpDetailDialogComponent {
-    constructor(@Inject(MAT_DIALOG_DATA) public data: { title: string; body: string }) {}
+export class HelpDetailDialogComponent {    data = inject<{
+    title: string;
+    body: string;
+}>(MAT_DIALOG_DATA);
+
 }
