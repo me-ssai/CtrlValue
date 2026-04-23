@@ -161,6 +161,7 @@ builder.Services.AddSingleton<PriceFetchJob>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<PriceFetchJob>());
 builder.Services.AddHostedService<DefaultInstrumentSeeder>();
 builder.Services.AddHostedService<DemoDataSeeder>();
+builder.Services.AddHostedService<SystemDataSeeder>();
 
 // ── Financial Connectivity Layer ──
 builder.Services.AddScoped<ManualProvider>();
