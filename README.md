@@ -7,6 +7,23 @@ A self-hosted personal finance platform for tracking accounts, transactions, inv
 ![Angular](https://img.shields.io/badge/Angular-19-red)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue)
 
+**[Try the live demo → demo.ctrlvalue.com](https://demo.ctrlvalue.com)**
+
+---
+
+![Net Worth Dashboard](docs/screenshots/dashboard.png)
+
+<table>
+  <tr>
+    <td><img src="docs/screenshots/accounts.png" alt="Accounts" /></td>
+    <td><img src="docs/screenshots/portfolio.png" alt="Portfolio" /></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/insights.png" alt="Insights" /></td>
+    <td></td>
+  </tr>
+</table>
+
 ---
 
 ## Features
