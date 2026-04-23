@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '@env/environment';
@@ -72,7 +72,8 @@ export interface UpdateDepreciationScheduleRequest {
 
 @Injectable({ providedIn: 'root' })
 export class ValuationService {
-    constructor(private http: HttpClient) { }
+    private http = inject(HttpClient);
+
 
     getValuations(accountId?: string, startDate?: string, endDate?: string): Observable<Valuation[]> {
         const params: Record<string, string> = {};
@@ -101,7 +102,8 @@ export class ValuationService {
 
 @Injectable({ providedIn: 'root' })
 export class DepreciationScheduleService {
-    constructor(private http: HttpClient) { }
+    private http = inject(HttpClient);
+
 
     getDepreciationSchedules(): Observable<DepreciationSchedule[]> {
         return this.http.get<DepreciationSchedule[]>(`${environment.apiUrl}/depreciationschedules`);

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -28,15 +28,13 @@ import { LiabilityFormComponent } from './liability-form/liability-form.componen
     styleUrl: './liabilities.component.scss'
 })
 export class LiabilitiesComponent implements OnInit {
+    private financeService = inject(FinanceService);
+    private snackBar = inject(MatSnackBar);
+    private dialog = inject(MatDialog);
+
     liabilities: Liability[] = [];
     loading = false;
     error: string | null = null;
-
-    constructor(
-        private financeService: FinanceService,
-        private snackBar: MatSnackBar,
-        private dialog: MatDialog
-    ) { }
 
     ngOnInit(): void {
         this.loadLiabilities();

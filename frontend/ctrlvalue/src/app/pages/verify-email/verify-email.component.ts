@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -18,6 +18,10 @@ import { AuthService } from '../../services/auth.service';
     styleUrls: ['./verify-email.component.scss']
 })
 export class VerifyEmailComponent implements OnInit {
+    private route = inject(ActivatedRoute);
+    private router = inject(Router);
+    private authService = inject(AuthService);
+
     state: 'loading' | 'expired' | 'error' = 'loading';
     errorMessage = '';
 
@@ -25,12 +29,6 @@ export class VerifyEmailComponent implements OnInit {
     resendLoading = false;
     resendSent = false;
     resendError = '';
-
-    constructor(
-        private route: ActivatedRoute,
-        private router: Router,
-        private authService: AuthService
-    ) {}
 
     ngOnInit(): void {
         const token = this.route.snapshot.queryParamMap.get('token');

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService, AdminUser } from '../../services/admin.service';
@@ -12,6 +12,9 @@ import { EntityService, Entity } from '../../services/entity.service';
     styleUrls: ['./site-admin.component.css']
 })
 export class SiteAdminComponent implements OnInit {
+    private adminService = inject(AdminService);
+    private entityService = inject(EntityService);
+
     activeTab: 'clients' | 'users' = 'clients';
     entities: Entity[] = [];
     tenantUsers: AdminUser[] = [];
@@ -19,8 +22,6 @@ export class SiteAdminComponent implements OnInit {
     inviteEmail = '';
     statusMessage = '';
     isError = false;
-
-    constructor(private adminService: AdminService, private entityService: EntityService) { }
 
     ngOnInit() {
         this.entityService.getEntities().subscribe({ next: e => this.entities = e });

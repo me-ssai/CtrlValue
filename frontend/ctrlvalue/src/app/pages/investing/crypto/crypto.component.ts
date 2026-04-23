@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule } from '@angular/material/icon';
@@ -46,7 +46,8 @@ import { InstrumentFormComponent } from '../../instruments/instrument-form/instr
     `
 })
 export class CryptoComponent {
-    constructor(private dialog: MatDialog) {}
+    private dialog = inject(MatDialog);
+
 
     addCoin(): void {
         this.dialog.open(InstrumentFormComponent, {

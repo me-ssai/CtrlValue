@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '@env/environment';
@@ -29,9 +29,9 @@ export interface TenantRecord {
 
 @Injectable({ providedIn: 'root' })
 export class AdminService {
-    private readonly base = `${environment.apiUrl}`;
+    private http = inject(HttpClient);
 
-    constructor(private http: HttpClient) { }
+    private readonly base = `${environment.apiUrl}`;
 
     // ── Super Admin ────────────────────────────────────────────────────────────
 

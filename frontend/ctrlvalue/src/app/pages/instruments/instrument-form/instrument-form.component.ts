@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -12,7 +12,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, filter } from 'rxjs/operators';
-import { InstrumentService, InstrumentSearchResult, Instrument } from '../../../services/instrument.service';
+import { InstrumentService, InstrumentSearchResult } from '../../../services/instrument.service';
 
 export interface InstrumentDialogData {
   instrumentId?: string;
@@ -62,6 +62,12 @@ const MARKETS: Market[] = [
   styleUrl: './instrument-form.component.scss'
 })
 export class InstrumentFormComponent implements OnInit, OnDestroy {
+  private fb = inject(FormBuilder);
+  private instrumentService = inject(InstrumentService);
+  private dialogRef = inject<MatDialogRef<InstrumentFormComponent>>(MatDialogRef);
+  private snackBar = inject(MatSnackBar);
+  data = inject<InstrumentDialogData>(MAT_DIALOG_DATA);
+
   instrumentForm: FormGroup;
   isEditMode = false;
   instrumentId: string | null = null;
@@ -89,13 +95,9 @@ export class InstrumentFormComponent implements OnInit, OnDestroy {
   private searchInput$ = new Subject<string>();
   private subs = new Subscription();
 
-  constructor(
-    private fb: FormBuilder,
-    private instrumentService: InstrumentService,
-    private dialogRef: MatDialogRef<InstrumentFormComponent>,
-    private snackBar: MatSnackBar,
-    @Inject(MAT_DIALOG_DATA) public data: InstrumentDialogData
-  ) {
+  constructor() {
+    const data = this.data;
+
     this.instrumentForm = this.fb.group({
       symbol: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(20)]],
       name: ['', [Validators.required, Validators.maxLength(100)]],

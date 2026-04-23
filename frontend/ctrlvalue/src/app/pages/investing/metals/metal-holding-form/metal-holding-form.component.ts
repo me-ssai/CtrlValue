@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -114,6 +114,14 @@ const METAL_DISPLAY: Record<string, string> = {
     `
 })
 export class MetalHoldingFormComponent implements OnInit {
+    private fb = inject(FormBuilder);
+    private instrumentService = inject(InstrumentService);
+    private positionService = inject(PositionService);
+    private financeService = inject(FinanceService);
+    private dialogRef = inject<MatDialogRef<MetalHoldingFormComponent>>(MatDialogRef);
+    private snackBar = inject(MatSnackBar);
+    data = inject<MetalHoldingDialogData>(MAT_DIALOG_DATA);
+
     form: FormGroup;
     isEditMode = false;
     positionId: string | null = null;
@@ -122,15 +130,7 @@ export class MetalHoldingFormComponent implements OnInit {
     accounts: Account[] = [];
     private updating = false;
 
-    constructor(
-        private fb: FormBuilder,
-        private instrumentService: InstrumentService,
-        private positionService: PositionService,
-        private financeService: FinanceService,
-        private dialogRef: MatDialogRef<MetalHoldingFormComponent>,
-        private snackBar: MatSnackBar,
-        @Inject(MAT_DIALOG_DATA) public data: MetalHoldingDialogData
-    ) {
+    constructor() {
         this.form = this.fb.group({
             instrumentId: ['', Validators.required],
             accountId: ['', Validators.required],

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
@@ -20,7 +20,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SelectionModel } from '@angular/cdk/collections';
-import { ViewChild } from '@angular/core';
+import { ViewChild, AfterViewInit } from '@angular/core';
 
 import { FinanceService } from '../../../services/finance.service';
 import { IntelligenceService } from '../../../services/intelligence.service';
@@ -67,7 +67,16 @@ import { AccountKeywordsComponent } from '../account-keywords/account-keywords.c
     templateUrl: './account-detail.component.html',
     styleUrl: './account-detail.component.scss'
 })
-export class AccountDetailComponent implements OnInit {
+export class AccountDetailComponent implements OnInit, AfterViewInit {
+    private route = inject(ActivatedRoute);
+    private router = inject(Router);
+    private financeService = inject(FinanceService);
+    private intelligenceService = inject(IntelligenceService);
+    private keywordRuleService = inject(AccountKeywordRuleService);
+    private fb = inject(FormBuilder);
+    private snackBar = inject(MatSnackBar);
+    private dialog = inject(MatDialog);
+
     accountId!: string;
     entityId!: string;
     account: Account | null = null;
@@ -112,17 +121,6 @@ export class AccountDetailComponent implements OnInit {
     get uncategorizedCount(): number {
         return this.dataSource.data.filter(t => !t.categoryId).length;
     }
-
-    constructor(
-        private route: ActivatedRoute,
-        private router: Router,
-        private financeService: FinanceService,
-        private intelligenceService: IntelligenceService,
-        private keywordRuleService: AccountKeywordRuleService,
-        private fb: FormBuilder,
-        private snackBar: MatSnackBar,
-        private dialog: MatDialog
-    ) { }
 
     ngOnInit(): void {
         this.accountId = this.route.snapshot.paramMap.get('id')!;
@@ -379,7 +377,11 @@ export class AccountDetailComponent implements OnInit {
     }
 
     toggleAllRows(): void {
-        this.isAllSelected() ? this.selection.clear() : this.selection.select(...this.dataSource.data);
+        if (this.isAllSelected()) {
+            this.selection.clear();
+        } else {
+            this.selection.select(...this.dataSource.data);
+        }
     }
 
     get selectedCount(): number { return this.selection.selected.length; }
