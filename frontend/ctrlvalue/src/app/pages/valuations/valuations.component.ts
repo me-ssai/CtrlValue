@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -39,6 +39,11 @@ import { Account } from '../../models/api.models';
   styleUrl: './valuations.component.scss'
 })
 export class ValuationsComponent implements OnInit {
+  private valuationService = inject(ValuationService);
+  private financeService = inject(FinanceService);
+  private fb = inject(FormBuilder);
+  private snackBar = inject(MatSnackBar);
+
   accounts: Account[] = [];
   selectedAccountId: string | null = null;
 
@@ -49,7 +54,7 @@ export class ValuationsComponent implements OnInit {
   // Inline edit state
   editingId: string | null = null;
   editValue: number | null = null;
-  editNotes: string = '';
+  editNotes = '';
 
   // Chart
   public lineChartData: ChartConfiguration<'line'>['data'] = {
@@ -77,12 +82,7 @@ export class ValuationsComponent implements OnInit {
     }
   };
 
-  constructor(
-    private valuationService: ValuationService,
-    private financeService: FinanceService,
-    private fb: FormBuilder,
-    private snackBar: MatSnackBar
-  ) {
+  constructor() {
     this.dataSource = new MatTableDataSource();
     this.valuationForm = this.fb.group({
       accountId: ['', Validators.required],

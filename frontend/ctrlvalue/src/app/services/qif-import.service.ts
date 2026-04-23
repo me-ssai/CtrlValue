@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -57,9 +57,9 @@ export interface UpdateStagingRowRequest {
 
 @Injectable({ providedIn: 'root' })
 export class QifImportService {
-    private readonly baseUrl = `${environment.apiUrl}/qif-import`;
+    private http = inject(HttpClient);
 
-    constructor(private http: HttpClient) { }
+    private readonly baseUrl = `${environment.apiUrl}/qif-import`;
 
     /**
      * Upload a .qif file for staging. Returns the created import file record.

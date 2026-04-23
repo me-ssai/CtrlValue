@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -122,19 +122,19 @@ export interface EtfDialogData {
     `
 })
 export class EtfFormComponent implements OnInit {
+    private fb = inject(FormBuilder);
+    private instrumentService = inject(InstrumentService);
+    private dialogRef = inject<MatDialogRef<EtfFormComponent>>(MatDialogRef);
+    private snackBar = inject(MatSnackBar);
+    data = inject<EtfDialogData>(MAT_DIALOG_DATA);
+
     form: FormGroup;
     isEditMode = false;
     instrumentId: string | null = null;
     loading = false;
     currencies = ['AUD', 'USD', 'EUR', 'GBP', 'CAD', 'JPY', 'CHF'];
 
-    constructor(
-        private fb: FormBuilder,
-        private instrumentService: InstrumentService,
-        private dialogRef: MatDialogRef<EtfFormComponent>,
-        private snackBar: MatSnackBar,
-        @Inject(MAT_DIALOG_DATA) public data: EtfDialogData
-    ) {
+    constructor() {
         this.form = this.fb.group({
             symbol:                ['', [Validators.required, Validators.minLength(2), Validators.maxLength(20)]],
             name:                  ['', [Validators.required, Validators.maxLength(100)]],

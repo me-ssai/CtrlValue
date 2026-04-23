@@ -4,7 +4,6 @@ import {
     HttpTestingController
 } from '@angular/common/http/testing';
 import {
-    HTTP_INTERCEPTORS,
     HttpClient,
     provideHttpClient,
     withInterceptors

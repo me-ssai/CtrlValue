@@ -1,8 +1,8 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 
 @Component({
@@ -43,6 +43,8 @@ import { MatButtonModule } from '@angular/material/button';
     `]
 })
 export class HelpIconComponent {
+    private dialog = inject(MatDialog);
+
     /** Short tooltip shown on hover. */
     @Input() text = '';
     /** Longer title for the detail dialog (optional). */
@@ -51,8 +53,6 @@ export class HelpIconComponent {
     @Input() body = '';
     /** If true, clicking opens a detail dialog with title+body. */
     @Input() detailed = false;
-
-    constructor(private dialog: MatDialog) {}
 
     showDetail(event: Event): void {
         event.stopPropagation();

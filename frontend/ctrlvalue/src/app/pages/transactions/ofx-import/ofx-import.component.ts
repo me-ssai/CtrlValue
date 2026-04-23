@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -97,6 +97,15 @@ export class OfxCancelConfirmDialogComponent { }
     styleUrl: './ofx-import.component.scss'
 })
 export class OfxImportComponent implements OnInit {
+    private fb = inject(FormBuilder);
+    private ofxService = inject(OfxImportService);
+    private financeService = inject(FinanceService);
+    private keywordRuleService = inject(AccountKeywordRuleService);
+    private snackBar = inject(MatSnackBar);
+    private dialog = inject(MatDialog);
+    private dialogRef = inject<MatDialogRef<OfxImportComponent>>(MatDialogRef);
+    data = inject(MAT_DIALOG_DATA);
+
 
     // ── Step 1 ──────────────────────────────────────────────────────────────────
     uploadForm: FormGroup;
@@ -136,16 +145,9 @@ export class OfxImportComponent implements OnInit {
     // ── Step 3 ──────────────────────────────────────────────────────────────────
     committing = false;
 
-    constructor(
-        private fb: FormBuilder,
-        private ofxService: OfxImportService,
-        private financeService: FinanceService,
-        private keywordRuleService: AccountKeywordRuleService,
-        private snackBar: MatSnackBar,
-        private dialog: MatDialog,
-        private dialogRef: MatDialogRef<OfxImportComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: { preselectedAccountId?: string } | null
-    ) {
+    constructor() {
+        const data = this.data;
+
         this.uploadForm = this.fb.group({
             accountId: [data?.preselectedAccountId ?? null, Validators.required],
             allowDuplicates: [false]

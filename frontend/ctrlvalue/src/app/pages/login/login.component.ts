@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -30,18 +30,18 @@ type LoginStep = 'credentials' | 'notice';
     styleUrls: ['./login.component.scss']
 })
 export class LoginComponent implements OnInit {
+    private authService = inject(AuthService);
+    private router = inject(Router);
+    private route = inject(ActivatedRoute);
+    private snackBar = inject(MatSnackBar);
+
     step: LoginStep = 'credentials';
 
     email = '';
     password = '';
     loading = false;
 
-    constructor(
-        private authService: AuthService,
-        private router: Router,
-        private route: ActivatedRoute,
-        private snackBar: MatSnackBar
-    ) {
+    constructor() {
         if (this.authService.isAuthenticated) {
             this.router.navigate(['/dashboard']);
         }

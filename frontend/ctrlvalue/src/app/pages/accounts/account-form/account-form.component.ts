@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -46,6 +46,11 @@ import { filterInstitutions, getInstitutionList } from '../../../shared/institut
     styleUrl: './account-form.component.scss'
 })
 export class AccountFormComponent {
+    private fb = inject(FormBuilder);
+    private financeService = inject(FinanceService);
+    private dialogRef = inject<MatDialogRef<AccountFormComponent>>(MatDialogRef);
+    private snackBar = inject(MatSnackBar);
+
     accountForm: FormGroup;
     loading = false;
 
@@ -55,12 +60,7 @@ export class AccountFormComponent {
 
     filteredInstitutions: string[] = [];
 
-    constructor(
-        private fb: FormBuilder,
-        private financeService: FinanceService,
-        private dialogRef: MatDialogRef<AccountFormComponent>,
-        private snackBar: MatSnackBar
-    ) {
+    constructor() {
         this.accountForm = this.fb.group({
             name: ['', [Validators.required, Validators.maxLength(256)]],
             accountType: ['ASSET', Validators.required],

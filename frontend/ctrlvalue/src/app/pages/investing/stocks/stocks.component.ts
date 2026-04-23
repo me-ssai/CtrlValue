@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule } from '@angular/material/icon';
@@ -49,7 +49,8 @@ import { PositionFormComponent } from '../../positions/position-form/position-fo
     `
 })
 export class StocksComponent {
-    constructor(private dialog: MatDialog) {}
+    private dialog = inject(MatDialog);
+
 
     addInstrument(): void {
         this.dialog.open(InstrumentFormComponent, { width: '560px', maxWidth: '95vw', data: {} });

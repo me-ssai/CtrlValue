@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, CurrencyPipe, TitleCasePipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -21,14 +21,12 @@ import { PropertyFormComponent } from './property-form/property-form.component';
     templateUrl: './real-estate.component.html'
 })
 export class RealEstateComponent implements OnInit {
+    private propertyService = inject(PropertyService);
+    private dialog = inject(MatDialog);
+    private snackBar = inject(MatSnackBar);
+
     displayedColumns = ['address', 'type', 'specs', 'purchasePrice', 'currentValue', 'gain', 'actions'];
     dataSource = new MatTableDataSource<Property>();
-
-    constructor(
-        private propertyService: PropertyService,
-        private dialog: MatDialog,
-        private snackBar: MatSnackBar
-    ) {}
 
     ngOnInit(): void { this.loadProperties(); }
 
