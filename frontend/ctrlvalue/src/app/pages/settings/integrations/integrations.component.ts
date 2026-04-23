@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -49,6 +49,10 @@ import { AccountDto } from '../../../services/api.generated';
     styleUrl: './integrations.component.scss'
 })
 export class IntegrationsComponent implements OnInit {
+    private integrationService = inject(IntegrationService);
+    private financeService = inject(FinanceService);
+    private snackBar = inject(MatSnackBar);
+
 
     // ── Market data integrations ───────────────────────────────────────────
     integrations: EntityIntegration[] = [];
@@ -76,12 +80,6 @@ export class IntegrationsComponent implements OnInit {
     // Link-account inline form state
     linkingAccountId: string | null = null;
     selectedSystemAccountId = '';
-
-    constructor(
-        private integrationService: IntegrationService,
-        private financeService: FinanceService,
-        private snackBar: MatSnackBar
-    ) {}
 
     ngOnInit(): void {
         this.loadIntegrations();
@@ -168,21 +166,21 @@ export class IntegrationsComponent implements OnInit {
     loadConnectedAccounts(): void {
         this.integrationService.getConnectedAccounts().subscribe({
             next: accounts => this.connectedAccounts = accounts,
-            error: () => {}
+            error: () => { /* ignored */ }
         });
     }
 
     loadConnectionHealth(): void {
         this.integrationService.getConnectionHealth().subscribe({
             next: health => this.connectionHealth = health,
-            error: () => {}
+            error: () => { /* ignored */ }
         });
     }
 
     loadSystemAccounts(): void {
         this.financeService.getAccounts().subscribe({
             next: a => this.systemAccounts = a,
-            error: () => {}
+            error: () => { /* ignored */ }
         });
     }
 
@@ -190,7 +188,7 @@ export class IntegrationsComponent implements OnInit {
     connectBank(): void {
         this.connectionsLoading = true;
         this.integrationService.initiateConnection().subscribe({
-            next: result => {
+            next: _result => {
                 this.connectionsLoading = false;
                 // Manual/CSV always returns type="none" — complete immediately
                 this.completeConnection('');

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -45,6 +45,13 @@ import { UpdateProfileRequest, ChangePasswordRequest } from '../../models/api.mo
     styleUrl: './settings.component.scss'
 })
 export class SettingsComponent implements OnInit {
+    themeService = inject(ThemeService);
+    authService = inject(AuthService);
+    private entityService = inject(EntityService);
+    private fb = inject(FormBuilder);
+    private snackBar = inject(MatSnackBar);
+    private router = inject(Router);
+
     profileForm: FormGroup;
     passwordForm: FormGroup;
 
@@ -83,14 +90,7 @@ export class SettingsComponent implements OnInit {
 
     private readonly CURRENCY_KEY = 'ctrlvalue_currency';
 
-    constructor(
-        public themeService: ThemeService,
-        public authService: AuthService,
-        private entityService: EntityService,
-        private fb: FormBuilder,
-        private snackBar: MatSnackBar,
-        private router: Router
-    ) {
+    constructor() {
         const user = this.authService.currentUser;
         this.profileForm = this.fb.group({
             firstName: [user?.firstName || '', [Validators.required, Validators.maxLength(100)]],

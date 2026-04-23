@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule } from '@angular/material/icon';
@@ -189,6 +189,10 @@ interface MetalSummary {
     `]
 })
 export class MetalsComponent implements OnInit {
+    private positionService = inject(PositionService);
+    private dialog = inject(MatDialog);
+    private snackBar = inject(MatSnackBar);
+
     holdingColumns = ['metal', 'quantity', 'costBasis', 'currentValue', 'gainLoss', 'account', 'actions'];
     summaryColumns = ['metal', 'quantity', 'cost', 'value', 'gainLoss'];
 
@@ -200,12 +204,6 @@ export class MetalsComponent implements OnInit {
     totalGainLoss = 0;
     /** Currency used for aggregate totals — taken from the first holding, falls back to AUD. */
     summaryDisplayCurrency = 'AUD';
-
-    constructor(
-        private positionService: PositionService,
-        private dialog: MatDialog,
-        private snackBar: MatSnackBar
-    ) {}
 
     ngOnInit(): void {
         this.loadHoldings();

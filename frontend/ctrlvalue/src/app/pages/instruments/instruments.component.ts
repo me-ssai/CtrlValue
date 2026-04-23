@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -38,6 +38,10 @@ import { CurrencyPipe } from '@angular/common';
   styleUrl: './instruments.component.scss'
 })
 export class InstrumentsComponent implements OnInit {
+  private instrumentService = inject(InstrumentService);
+  private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
+
   /** When set, only instruments of this type are loaded (e.g. 'METAL'). */
   @Input() typeFilter?: string;
   /** Set to false when embedded in a parent page that supplies its own header/actions. */
@@ -49,11 +53,7 @@ export class InstrumentsComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  constructor(
-    private instrumentService: InstrumentService,
-    private snackBar: MatSnackBar,
-    private dialog: MatDialog
-  ) {
+  constructor() {
     this.dataSource = new MatTableDataSource();
   }
 

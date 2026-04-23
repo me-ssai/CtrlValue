@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '@env/environment';
@@ -223,9 +223,9 @@ export interface AgentAuditLogDto {
 
 @Injectable({ providedIn: 'root' })
 export class AgentService {
-    private readonly api = environment.apiUrl;
+    private http = inject(HttpClient);
 
-    constructor(private http: HttpClient) {}
+    private readonly api = environment.apiUrl;
 
     // ── Config ────────────────────────────────────────────────────────────────
     getConfig(): Observable<AgentConfigDto> {

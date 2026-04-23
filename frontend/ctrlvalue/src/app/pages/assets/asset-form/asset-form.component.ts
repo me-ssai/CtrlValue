@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -33,19 +33,19 @@ export interface AssetDialogData {
     styleUrl: './asset-form.component.scss'
 })
 export class AssetFormComponent implements OnInit {
+    private fb = inject(FormBuilder);
+    private financeService = inject(FinanceService);
+    private dialogRef = inject<MatDialogRef<AssetFormComponent>>(MatDialogRef);
+    private snackBar = inject(MatSnackBar);
+    data = inject<AssetDialogData>(MAT_DIALOG_DATA);
+
     assetForm: FormGroup;
     isEditMode = false;
     assetId: string | null = null;
     loading = false;
     categories = ['Liquid', 'SemiLiquid', 'NonLiquid', 'LongTerm'];
 
-    constructor(
-        private fb: FormBuilder,
-        private financeService: FinanceService,
-        private dialogRef: MatDialogRef<AssetFormComponent>,
-        private snackBar: MatSnackBar,
-        @Inject(MAT_DIALOG_DATA) public data: AssetDialogData
-    ) {
+    constructor() {
         this.assetForm = this.fb.group({
             name: ['', [Validators.required, Validators.maxLength(256)]],
             category: ['Liquid', Validators.required],
