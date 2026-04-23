@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -31,19 +31,19 @@ const PROPERTY_TYPES = ['RESIDENTIAL', 'COMMERCIAL', 'INDUSTRIAL', 'LAND', 'RURA
     templateUrl: './property-form.component.html'
 })
 export class PropertyFormComponent implements OnInit {
+    private fb = inject(FormBuilder);
+    private propertyService = inject(PropertyService);
+    private dialogRef = inject<MatDialogRef<PropertyFormComponent>>(MatDialogRef);
+    private snackBar = inject(MatSnackBar);
+    data = inject<PropertyDialogData>(MAT_DIALOG_DATA);
+
     form: FormGroup;
     isEditMode = false;
     propertyId: string | null = null;
     loading = false;
     propertyTypes = PROPERTY_TYPES;
 
-    constructor(
-        private fb: FormBuilder,
-        private propertyService: PropertyService,
-        private dialogRef: MatDialogRef<PropertyFormComponent>,
-        private snackBar: MatSnackBar,
-        @Inject(MAT_DIALOG_DATA) public data: PropertyDialogData
-    ) {
+    constructor() {
         this.form = this.fb.group({
             // Address
             address: ['', Validators.required],

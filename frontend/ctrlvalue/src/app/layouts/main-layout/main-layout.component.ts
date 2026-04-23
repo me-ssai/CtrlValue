@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -40,14 +40,12 @@ import { TickerStripComponent } from '../../shared/ticker-strip/ticker-strip.com
     styleUrl: './main-layout.component.scss'
 })
 export class MainLayoutComponent {
+    authService = inject(AuthService);
+    demoState = inject(DemoStateService);
+    private router = inject(Router);
+
     sidebarCollapsed = true;
     readonly isDemoMode = environment.demo;
-
-    constructor(
-        public authService: AuthService,
-        public demoState: DemoStateService,
-        private router: Router
-    ) { }
 
     toggleSidebar(): void {
         this.sidebarCollapsed = !this.sidebarCollapsed;

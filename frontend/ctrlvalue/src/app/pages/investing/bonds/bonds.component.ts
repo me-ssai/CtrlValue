@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule } from '@angular/material/icon';
@@ -51,7 +51,8 @@ import { PositionFormComponent } from '../../positions/position-form/position-fo
     `
 })
 export class BondsComponent {
-    constructor(private dialog: MatDialog) {}
+    private dialog = inject(MatDialog);
+
 
     addBond(): void {
         this.dialog.open(BondFormComponent, {

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -12,9 +12,9 @@ import {
   providedIn: 'root'
 })
 export class CategoryKeywordRuleService {
-  private apiUrl = `${environment.apiUrl}/CategoryKeywordRules`;
+  private http = inject(HttpClient);
 
-  constructor(private http: HttpClient) { }
+  private apiUrl = `${environment.apiUrl}/CategoryKeywordRules`;
 
   getAll(): Observable<CategoryKeywordRule[]> {
     return this.http.get<CategoryKeywordRule[]>(this.apiUrl);
