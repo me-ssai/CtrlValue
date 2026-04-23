@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -26,16 +26,14 @@ import { AccountFormComponent } from './account-form/account-form.component';
     styleUrl: './accounts.component.scss'
 })
 export class AccountsComponent implements OnInit {
+    private financeService = inject(FinanceService);
+    private router = inject(Router);
+    private snackBar = inject(MatSnackBar);
+    private dialog = inject(MatDialog);
+
     accounts: Account[] = [];
     loading = false;
     refreshingBalances = false;
-
-    constructor(
-        private financeService: FinanceService,
-        private router: Router,
-        private snackBar: MatSnackBar,
-        private dialog: MatDialog
-    ) { }
 
     ngOnInit(): void {
         this.loadAccounts();

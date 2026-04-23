@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '@env/environment';
@@ -69,7 +69,8 @@ export interface UpdatePropertyRequest {
 
 @Injectable({ providedIn: 'root' })
 export class PropertyService {
-    constructor(private http: HttpClient) {}
+    private http = inject(HttpClient);
+
 
     getProperties(): Observable<Property[]> {
         return this.http.get<Property[]>(`${environment.apiUrl}/property`);

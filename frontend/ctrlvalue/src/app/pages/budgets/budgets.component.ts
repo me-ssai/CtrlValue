@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, DatePipe, CurrencyPipe, PercentPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -33,14 +33,14 @@ import { BudgetFormComponent } from './budget-form/budget-form.component';
   styleUrl: './budgets.component.scss'
 })
 export class BudgetsComponent implements OnInit {
+  private budgetService = inject(BudgetService);
+  private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
+
   dataSource: MatTableDataSource<Budget>;
   displayedColumns: string[] = ['category', 'periodType', 'period', 'progress', 'amount', 'spent', 'remaining', 'actions'];
 
-  constructor(
-    private budgetService: BudgetService,
-    private snackBar: MatSnackBar,
-    private dialog: MatDialog
-  ) {
+  constructor() {
     this.dataSource = new MatTableDataSource();
   }
 

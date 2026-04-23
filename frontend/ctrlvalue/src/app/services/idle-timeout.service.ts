@@ -1,4 +1,4 @@
-import { Injectable, NgZone, OnDestroy } from '@angular/core';
+import { Injectable, NgZone, OnDestroy, inject } from '@angular/core';
 import { Subject, Subscription, fromEvent, merge } from 'rxjs';
 
 const IDLE_TIMEOUT_MS  = 30 * 60 * 1000;   // 30 minutes
@@ -6,14 +6,14 @@ const WARNING_BEFORE_MS = 5 * 60 * 1000;   // warn 5 min before timeout
 
 @Injectable({ providedIn: 'root' })
 export class IdleTimeoutService implements OnDestroy {
+    private zone = inject(NgZone);
+
     private idleTimer: ReturnType<typeof setTimeout> | null = null;
     private warnTimer: ReturnType<typeof setTimeout> | null = null;
     private activitySub: Subscription | null = null;
 
     readonly warn$    = new Subject<void>();   // emits when 5-min warning should appear
-    readonly timeout$ = new Subject<void>();   // emits when session should be terminated
-
-    constructor(private zone: NgZone) { }
+    readonly timeout$ = new Subject<void>();
 
     start(): void {
         const activity$ = merge(
