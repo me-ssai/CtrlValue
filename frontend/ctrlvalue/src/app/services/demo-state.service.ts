@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
@@ -25,6 +25,8 @@ export interface DemoBootstrapDto {
 
 @Injectable({ providedIn: 'root' })
 export class DemoStateService {
+    private http = inject(HttpClient);
+
     readonly isDemoMode = environment.demo;
 
     private _baseline: DemoBootstrapDto | null = null;
@@ -37,8 +39,6 @@ export class DemoStateService {
     private _categories  = new Map<string, CategoryDto>();
     private _budgets     = new Map<string, BudgetDto>();
     private _deletedIds  = new Set<string>();
-
-    constructor(private http: HttpClient) {}
 
     setBaseline(data: DemoBootstrapDto): void {
         this._baseline = data;

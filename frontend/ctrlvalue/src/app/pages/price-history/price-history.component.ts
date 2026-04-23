@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ViewChild } from '@angular/core';
+import { Component, OnInit, Input, ViewChild, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -42,6 +42,10 @@ import { PriceHistoryService, PriceHistory, BulkPriceImportRequest, PriceDataPoi
   styleUrl: './price-history.component.scss'
 })
 export class PriceHistoryComponent implements OnInit {
+  private instrumentService = inject(InstrumentService);
+  private priceHistoryService = inject(PriceHistoryService);
+  private snackBar = inject(MatSnackBar);
+
   @Input() instrumentTypeFilter?: string;
 
   instruments: Instrument[] = [];
@@ -83,11 +87,7 @@ export class PriceHistoryComponent implements OnInit {
   };
   public lineChartLegend = true;
 
-  constructor(
-    private instrumentService: InstrumentService,
-    private priceHistoryService: PriceHistoryService,
-    private snackBar: MatSnackBar
-  ) {
+  constructor() {
     this.dataSource = new MatTableDataSource();
   }
 

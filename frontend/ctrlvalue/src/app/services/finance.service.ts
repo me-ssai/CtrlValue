@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
@@ -24,8 +24,9 @@ export interface BulkDeleteTransactionsRequest {
 
 @Injectable({ providedIn: 'root' })
 export class FinanceService {
+    private client = inject(Client);
+    private http = inject(HttpClient);
 
-    constructor(private client: Client, private http: HttpClient) { }
 
     // ═══════════════════════════════════════════════════════════════════════════
     // Accounts
