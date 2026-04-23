@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, CurrencyPipe, PercentPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -247,6 +247,10 @@ const CHART_COLORS = [
     `]
 })
 export class InvestmentHubComponent implements OnInit {
+    private positionService = inject(PositionService);
+    private propertyService = inject(PropertyService);
+    private financeService = inject(FinanceService);
+
     readonly CHART_COLORS = CHART_COLORS;
 
     loading = true;
@@ -278,12 +282,6 @@ export class InvestmentHubComponent implements OnInit {
             }
         }
     };
-
-    constructor(
-        private positionService: PositionService,
-        private propertyService: PropertyService,
-        private financeService: FinanceService
-    ) {}
 
     ngOnInit(): void { this.loadAll(); }
 

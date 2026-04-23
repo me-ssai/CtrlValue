@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -17,7 +17,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatChipsModule } from '@angular/material/chips';
 
-import { LoanService, LoanDetailsDto, LoanRateHistoryDto, LoanRateChangeRequest } from '../../../services/loan.service';
+import { LoanService, LoanDetailsDto, LoanRateChangeRequest } from '../../../services/loan.service';
 import { FinanceService } from '../../../services/finance.service';
 import { AccountDto } from '../../../services/api.generated';
 
@@ -47,6 +47,11 @@ import { AccountDto } from '../../../services/api.generated';
     styleUrl: './loan-detail-form.component.scss'
 })
 export class LoanDetailFormComponent implements OnInit, OnChanges {
+    private fb = inject(FormBuilder);
+    private loanService = inject(LoanService);
+    private financeService = inject(FinanceService);
+    private snackBar = inject(MatSnackBar);
+
     @Input() accountId!: string;
     @Input() entityId!: string;
 
@@ -65,13 +70,6 @@ export class LoanDetailFormComponent implements OnInit, OnChanges {
 
     readonly frequencies = ['Monthly', 'Fortnightly', 'Weekly'];
     readonly rateTypes = ['Variable', 'Fixed'];
-
-    constructor(
-        private fb: FormBuilder,
-        private loanService: LoanService,
-        private financeService: FinanceService,
-        private snackBar: MatSnackBar
-    ) { }
 
     ngOnInit(): void {
         this.loadSupportingAccounts();
@@ -103,7 +101,7 @@ export class LoanDetailFormComponent implements OnInit, OnChanges {
                 this.buildForm(loan);
                 this.loading = false;
             },
-            error: (err) => {
+            error: (_err) => {
                 // 404 means no loan yet — show blank create form
                 this.loan = null;
                 this.isNew = true;

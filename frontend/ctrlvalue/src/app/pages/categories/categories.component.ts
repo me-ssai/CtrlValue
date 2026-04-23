@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, inject, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -43,7 +43,11 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
     templateUrl: './categories.component.html',
     styleUrl: './categories.component.scss'
 })
-export class CategoriesComponent implements OnInit {
+export class CategoriesComponent implements OnInit, AfterViewInit {
+    private financeService = inject(FinanceService);
+    private snackBar = inject(MatSnackBar);
+    private dialog = inject(MatDialog);
+
     displayedColumns: string[] = ['name', 'categoryType', 'parentCategory', 'color', 'icon', 'actions'];
     dataSource = new MatTableDataSource<Category>();
     loading = false;
@@ -52,12 +56,6 @@ export class CategoriesComponent implements OnInit {
 
     @ViewChild(MatPaginator) paginator!: MatPaginator;
     @ViewChild(MatSort) sort!: MatSort;
-
-    constructor(
-        private financeService: FinanceService,
-        private snackBar: MatSnackBar,
-        private dialog: MatDialog
-    ) { }
 
     ngOnInit(): void {
         this.loadCategories();

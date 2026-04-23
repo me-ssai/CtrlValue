@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, DatePipe, CurrencyPipe, PercentPipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -40,6 +40,11 @@ import { Account } from '../../models/api.models';
   styleUrl: './depreciation-schedules.component.scss'
 })
 export class DepreciationSchedulesComponent implements OnInit {
+  private depreciationService = inject(DepreciationScheduleService);
+  private financeService = inject(FinanceService);
+  private fb = inject(FormBuilder);
+  private snackBar = inject(MatSnackBar);
+
   accounts: Account[] = [];
   scheduleForm: FormGroup;
   dataSource: MatTableDataSource<DepreciationSchedule>;
@@ -48,12 +53,7 @@ export class DepreciationSchedulesComponent implements OnInit {
   methods = ['STRAIGHT_LINE', 'DECLINING_BALANCE', 'REDBOOK'];
   loading = false;
 
-  constructor(
-    private depreciationService: DepreciationScheduleService,
-    private financeService: FinanceService,
-    private fb: FormBuilder,
-    private snackBar: MatSnackBar
-  ) {
+  constructor() {
     this.dataSource = new MatTableDataSource();
     this.scheduleForm = this.fb.group({
       accountId: ['', Validators.required],

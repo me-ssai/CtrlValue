@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule } from '@angular/material/icon';
@@ -51,10 +51,10 @@ import { PositionFormComponent } from '../../positions/position-form/position-fo
     `
 })
 export class EtfsComponent {
+    private dialog = inject(MatDialog);
+
     /** ETF and FUND types — used to filter positions in the Portfolio tab */
     readonly etfTypes = 'ETF|FUND';
-
-    constructor(private dialog: MatDialog) {}
 
     addEtf(): void {
         this.dialog.open(EtfFormComponent, {

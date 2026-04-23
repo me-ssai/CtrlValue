@@ -1,4 +1,4 @@
-import { Component, ElementRef, Inject, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -57,6 +57,14 @@ export interface QuickCategorizeDialogResult {
     styleUrl: './quick-categorize-dialog.component.scss'
 })
 export class QuickCategorizeDialogComponent implements OnInit {
+    data = inject<QuickCategorizeDialogData>(MAT_DIALOG_DATA);
+    private dialogRef = inject<MatDialogRef<QuickCategorizeDialogComponent, QuickCategorizeDialogResult | undefined>>(MatDialogRef);
+    private fb = inject(FormBuilder);
+    private financeService = inject(FinanceService);
+    private intelligenceService = inject(IntelligenceService);
+    private ruleService = inject(CategoryKeywordRuleService);
+    private snackBar = inject(MatSnackBar);
+
     @ViewChild('categorySearchInput') categorySearchInput!: ElementRef<HTMLInputElement>;
 
     form!: FormGroup;
@@ -86,16 +94,6 @@ export class QuickCategorizeDialogComponent implements OnInit {
         { value: CategoryType.INCOME, label: 'Income' },
         { value: CategoryType.TRANSFER, label: 'Transfer' }
     ];
-
-    constructor(
-        @Inject(MAT_DIALOG_DATA) public data: QuickCategorizeDialogData,
-        private dialogRef: MatDialogRef<QuickCategorizeDialogComponent, QuickCategorizeDialogResult | undefined>,
-        private fb: FormBuilder,
-        private financeService: FinanceService,
-        private intelligenceService: IntelligenceService,
-        private ruleService: CategoryKeywordRuleService,
-        private snackBar: MatSnackBar
-    ) {}
 
     ngOnInit(): void {
         const tx = this.data.transaction;
