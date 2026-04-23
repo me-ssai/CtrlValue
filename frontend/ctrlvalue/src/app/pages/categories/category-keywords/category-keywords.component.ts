@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatChipsModule } from '@angular/material/chips';
@@ -28,15 +28,13 @@ import { Category, CategoryKeywordRule, KeywordMatchType } from '../../../models
   styleUrls: ['./category-keywords.component.scss']
 })
 export class CategoryKeywordsComponent implements OnInit {
+  private keywordService = inject(CategoryKeywordRuleService);
+  private snackBar = inject(MatSnackBar);
+
   @Input() category!: Category;
   keywords: CategoryKeywordRule[] = [];
-  newKeyword: string = '';
+  newKeyword = '';
   loading = false;
-
-  constructor(
-    private keywordService: CategoryKeywordRuleService,
-    private snackBar: MatSnackBar
-  ) {}
 
   ngOnInit(): void {
     this.loadKeywords();
@@ -84,7 +82,7 @@ export class CategoryKeywordsComponent implements OnInit {
       next: () => {
         this.keywords = this.keywords.filter(k => k.id !== ruleId);
       },
-      error: (err) => {
+      error: (_err) => {
         this.snackBar.open('Failed to delete keyword', 'Close', { duration: 3000 });
       }
     });

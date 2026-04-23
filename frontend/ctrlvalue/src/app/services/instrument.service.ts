@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '@env/environment';
@@ -144,7 +144,8 @@ export interface InstrumentSearchResult {
 
 @Injectable({ providedIn: 'root' })
 export class InstrumentService {
-    constructor(private http: HttpClient) { }
+    private http = inject(HttpClient);
+
 
     getInstruments(type?: string): Observable<Instrument[]> {
         const params: Record<string, string> = {};
@@ -186,7 +187,8 @@ export class InstrumentService {
 
 @Injectable({ providedIn: 'root' })
 export class PositionService {
-    constructor(private http: HttpClient) { }
+    private http = inject(HttpClient);
+
 
     getPositions(accountId?: string): Observable<Position[]> {
         const params: Record<string, string> = {};

@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -44,6 +44,12 @@ interface InvestmentType {
     styleUrls: ['./link-investment-dialog.component.scss']
 })
 export class LinkInvestmentDialogComponent implements OnInit {
+    private fb = inject(FormBuilder);
+    private financeService = inject(FinanceService);
+    private dialogRef = inject<MatDialogRef<LinkInvestmentDialogComponent>>(MatDialogRef);
+    private snackBar = inject(MatSnackBar);
+    data = inject<LinkInvestmentDialogData>(MAT_DIALOG_DATA);
+
     transaction: TransactionDto;
     selectedType: string | null = null;
     instruments: InstrumentDto[] = [];
@@ -59,13 +65,9 @@ export class LinkInvestmentDialogComponent implements OnInit {
         { key: 'CRYPTO', label: 'Cryptocurrency', icon: 'currency_bitcoin', description: 'Link to a crypto purchase' },
     ];
 
-    constructor(
-        private fb: FormBuilder,
-        private financeService: FinanceService,
-        private dialogRef: MatDialogRef<LinkInvestmentDialogComponent>,
-        private snackBar: MatSnackBar,
-        @Inject(MAT_DIALOG_DATA) public data: LinkInvestmentDialogData
-    ) {
+    constructor() {
+        const data = this.data;
+
         this.transaction = data.transaction;
         this.linkForm = this.fb.group({
             instrumentId: ['', Validators.required],

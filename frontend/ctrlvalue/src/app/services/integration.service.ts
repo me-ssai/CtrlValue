@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '@env/environment';
@@ -92,10 +92,10 @@ export interface ConnectionHealth {
 
 @Injectable({ providedIn: 'root' })
 export class IntegrationService {
+    private http = inject(HttpClient);
+
     private readonly baseUrl        = `${environment.apiUrl}/integrations`;
     private readonly connectionsUrl = `${environment.apiUrl}/connections`;
-
-    constructor(private http: HttpClient) {}
 
     // ── Market Data Integrations ────────────────────────────────────────────
 

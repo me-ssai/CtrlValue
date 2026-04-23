@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -11,6 +11,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { FinanceService } from '../../../services/finance.service';
 import { CreateCategoryRequest, Category } from '../../../models/api.models';
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface CategoryDialogData {
     // create-only for now; extend later for edit
 }
@@ -33,18 +34,18 @@ export interface CategoryDialogData {
     styleUrl: './category-form.component.scss'
 })
 export class CategoryFormComponent implements OnInit {
+    private fb = inject(FormBuilder);
+    private financeService = inject(FinanceService);
+    private dialogRef = inject<MatDialogRef<CategoryFormComponent>>(MatDialogRef);
+    private snackBar = inject(MatSnackBar);
+    data = inject<CategoryDialogData>(MAT_DIALOG_DATA);
+
     categoryForm: FormGroup;
     loading = false;
     parentCategories: Category[] = [];
     categoryTypes = ['INCOME', 'EXPENSE', 'TRANSFER'];
 
-    constructor(
-        private fb: FormBuilder,
-        private financeService: FinanceService,
-        private dialogRef: MatDialogRef<CategoryFormComponent>,
-        private snackBar: MatSnackBar,
-        @Inject(MAT_DIALOG_DATA) public data: CategoryDialogData
-    ) {
+    constructor() {
         this.categoryForm = this.fb.group({
             name: ['', [Validators.required, Validators.maxLength(100)]],
             categoryType: ['EXPENSE', Validators.required],

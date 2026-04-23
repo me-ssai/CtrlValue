@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -56,6 +56,14 @@ import { BaseChartDirective, provideCharts, withDefaultRegisterables } from 'ng2
     styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
+    authService = inject(AuthService);
+    private http = inject(HttpClient);
+    router = inject(Router);
+    private loanService = inject(LoanService);
+    private financeService = inject(FinanceService);
+    private intelligenceService = inject(IntelligenceService);
+    private dialog = inject(MatDialog);
+
     summary: DashboardSummary | null = null;
     loading = true;
     refreshingBalances = false;
@@ -83,16 +91,6 @@ export class DashboardComponent implements OnInit {
     linkingTransfer: TransferCandidate | null = null;
 
     fabOpen = false;
-
-    constructor(
-        public authService: AuthService,
-        private http: HttpClient,
-        public router: Router,
-        private loanService: LoanService,
-        private financeService: FinanceService,
-        private intelligenceService: IntelligenceService,
-        private dialog: MatDialog
-    ) { }
 
     ngOnInit(): void {
         this.loadDashboard();
@@ -130,7 +128,7 @@ export class DashboardComponent implements OnInit {
                     c => c.outflowTxnId !== candidate.outflowTxnId);
                 this.linkingTransfer = null;
             },
-            error: () => {}
+            error: () => { /* ignored */ }
         });
     }
 
@@ -166,7 +164,7 @@ export class DashboardComponent implements OnInit {
         });
     }
 
-    private loadLoans(entityId: string): void {
+    private loadLoans(_entityId: string): void {
         this.loansLoading = true;
         // Get all LIABILITY accounts, then fetch summary for each that has loan details
         this.financeService.getAccounts('LIABILITY').subscribe({
@@ -349,10 +347,10 @@ export class DashboardComponent implements OnInit {
         return this.sortedHoldings.filter(h => h.accountType === 'LIABILITY');
     }
 
-    get liquidityBreakdown(): Array<{
+    get liquidityBreakdown(): {
         key: string; label: string; icon: string; colorClass: string;
         total: number; percentage: number;
-    }> {
+    }[] {
         const tiers = [
             { key: 'LIQUID',      label: 'Liquid',      icon: 'water_drop', colorClass: 'liq-liquid'      },
             { key: 'SEMI_LIQUID', label: 'Semi-Liquid', icon: 'opacity',    colorClass: 'liq-semi-liquid'  },

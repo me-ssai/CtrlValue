@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ViewChild } from '@angular/core';
+import { Component, OnInit, Input, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -42,6 +42,11 @@ import { CurrencyPipe, PercentPipe, DatePipe } from '@angular/common';
   styleUrl: './positions.component.scss'
 })
 export class PositionsComponent implements OnInit {
+  private positionService = inject(PositionService);
+  private financeService = inject(FinanceService);
+  private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
+
   @Input() instrumentTypeFilter?: string;
   /** When true, hides the page-header so the component can be embedded inside another page. */
   @Input() embedded = false;
@@ -54,12 +59,7 @@ export class PositionsComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  constructor(
-    private positionService: PositionService,
-    private financeService: FinanceService,
-    private snackBar: MatSnackBar,
-    private dialog: MatDialog
-  ) {
+  constructor() {
     this.dataSource = new MatTableDataSource();
   }
 

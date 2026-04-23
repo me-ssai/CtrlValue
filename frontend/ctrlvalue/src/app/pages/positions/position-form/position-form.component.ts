@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -11,7 +11,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Subscription, forkJoin } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { PositionService, InstrumentService, Instrument } from '../../../services/instrument.service';
 import { FinanceService } from '../../../services/finance.service';
 import { Account } from '../../../models/api.models';
@@ -37,6 +37,14 @@ const METAL_UNIT_LABELS: Record<string, string> = {
   styleUrl: './position-form.component.scss'
 })
 export class PositionFormComponent implements OnInit, OnDestroy {
+  private fb = inject(FormBuilder);
+  private positionService = inject(PositionService);
+  private instrumentService = inject(InstrumentService);
+  private financeService = inject(FinanceService);
+  private dialogRef = inject<MatDialogRef<PositionFormComponent>>(MatDialogRef);
+  private snackBar = inject(MatSnackBar);
+  data = inject<PositionDialogData>(MAT_DIALOG_DATA);
+
   positionForm: FormGroup;
   isEditMode = false;
   positionId: string | null = null;
@@ -53,15 +61,7 @@ export class PositionFormComponent implements OnInit, OnDestroy {
   private lastEdited: 'costBasisTotal' | 'costBasisPerUnit' | 'quantity' | null = null;
   private subs = new Subscription();
 
-  constructor(
-    private fb: FormBuilder,
-    private positionService: PositionService,
-    private instrumentService: InstrumentService,
-    private financeService: FinanceService,
-    private dialogRef: MatDialogRef<PositionFormComponent>,
-    private snackBar: MatSnackBar,
-    @Inject(MAT_DIALOG_DATA) public data: PositionDialogData
-  ) {
+  constructor() {
     this.positionForm = this.fb.group({
       accountId: ['', Validators.required],
       instrumentId: ['', Validators.required],
@@ -104,7 +104,7 @@ export class PositionFormComponent implements OnInit, OnDestroy {
   // ── Auto-calculation ──────────────────────────────────────────────────────
 
   private setupAutoCalculations(): void {
-    const fields: Array<'costBasisTotal' | 'costBasisPerUnit' | 'quantity'> =
+    const fields: ('costBasisTotal' | 'costBasisPerUnit' | 'quantity')[] =
       ['costBasisTotal', 'costBasisPerUnit', 'quantity'];
 
     fields.forEach(field => {
@@ -182,7 +182,7 @@ export class PositionFormComponent implements OnInit, OnDestroy {
     if (this.positionForm.invalid) return;
     this.loading = true;
     const formValue = this.positionForm.getRawValue();
-    const { costBasisPerUnit, ...rest } = formValue;
+    const { costBasisPerUnit: _costBasisPerUnit, ...rest } = formValue;
     const openedAt = formValue.openedAt instanceof Date ? formValue.openedAt.toISOString() : formValue.openedAt;
     const request = { ...rest, openedAt };
 

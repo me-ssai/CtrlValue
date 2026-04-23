@@ -10,14 +10,14 @@ import { EntityService } from './entity.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+    private http = inject(HttpClient);
+
     private readonly USER_KEY = 'ctrlvalue_user';
 
     private currentUserSubject = new BehaviorSubject<UserInfo | null>(this.getStoredUser());
     currentUser$ = this.currentUserSubject.asObservable();
 
     private entityService = inject(EntityService);
-
-    constructor(private http: HttpClient) { }
 
     // isAuthenticated is based on in-memory user presence (populated on login / app reload from localStorage).
     // Actual token validity is enforced by the backend via httpOnly cookie; 401 responses trigger re-login.
@@ -88,7 +88,7 @@ export class AuthService {
 
     logout(): void {
         // Backend clears httpOnly cookies; frontend clears non-sensitive profile data.
-        this.http.post(`${environment.apiUrl}/auth/logout`, {}).subscribe({ error: () => {} });
+        this.http.post(`${environment.apiUrl}/auth/logout`, {}).subscribe({ error: () => { /* ignored */ } });
         localStorage.removeItem(this.USER_KEY);
         this.currentUserSubject.next(null);
         this.entityService.clearCurrentEntity();

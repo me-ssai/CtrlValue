@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -70,10 +70,11 @@ const OTHER_ASSET_CLASSES = new Set(['BUSINESS', 'VEHICLE', 'OTHER']);
     `
 })
 export class OtherInvestmentsComponent implements OnInit {
+    private financeService = inject(FinanceService);
+    private dialog = inject(MatDialog);
+
     displayedColumns = ['name', 'assetClass', 'currency', 'currentBalance', 'actions'];
     dataSource = new MatTableDataSource<AccountDto>();
-
-    constructor(private financeService: FinanceService, private dialog: MatDialog) {}
 
     ngOnInit(): void {
         this.loadAccounts();
