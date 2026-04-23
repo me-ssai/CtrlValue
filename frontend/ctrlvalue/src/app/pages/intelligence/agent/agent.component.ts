@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -53,6 +53,9 @@ import {
     styleUrl: './agent.component.scss'
 })
 export class AgentComponent implements OnInit {
+    private agentService = inject(AgentService);
+    private sanitizer = inject(DomSanitizer);
+
     // State
     config: AgentConfigDto | null = null;
     context: FinanceContextDto | null = null;
@@ -133,16 +136,14 @@ export class AgentComponent implements OnInit {
 
     scenarioType: RunScenarioRequest['scenarioType'] = 'CutCategory';
     scenarioCategoryName = '';
-    scenarioReductionPercent: number = 20;
+    scenarioReductionPercent = 20;
     scenarioLoanName = '';
-    scenarioTargetSavingsRate: number = 20;
-    scenarioProjectionYears: number = 10;
+    scenarioTargetSavingsRate = 20;
+    scenarioProjectionYears = 10;
     scenarioVehicleName = '';
     scenarioResult: ScenarioResultDto | null = null;
     scenarioLoading = false;
     scenarioError: string | null = null;
-
-    constructor(private agentService: AgentService, private sanitizer: DomSanitizer) {}
 
     ngOnInit(): void {
         this.loadConfig();

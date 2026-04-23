@@ -47,12 +47,12 @@ export interface UpdateEntityUserRequest {
 
 @Injectable({ providedIn: 'root' })
 export class EntityService {
+    private http = inject(HttpClient);
+
     private readonly ENTITY_KEY = 'ctrlvalue_current_entity';
 
     private currentEntitySubject = new BehaviorSubject<Entity | null>(this.getStoredEntity());
     currentEntity$ = this.currentEntitySubject.asObservable();
-
-    constructor(private http: HttpClient) { }
 
     get currentEntity(): Entity | null {
         return this.currentEntitySubject.value;

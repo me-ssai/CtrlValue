@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -40,9 +40,9 @@ export interface OfxStagedImportReviewDto {
 
 @Injectable({ providedIn: 'root' })
 export class OfxImportService {
-    private readonly baseUrl = `${environment.apiUrl}/ofx-import`;
+    private http = inject(HttpClient);
 
-    constructor(private http: HttpClient) { }
+    private readonly baseUrl = `${environment.apiUrl}/ofx-import`;
 
     /**
      * Upload a .ofx file for staging. Returns the created import file record.

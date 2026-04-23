@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -122,11 +122,12 @@ import { ValuationsComponent } from '../../valuations/valuations.component';
     `]
 })
 export class SuperComponent implements OnInit {
+    private financeService = inject(FinanceService);
+    private dialog = inject(MatDialog);
+
     displayedColumns = ['name', 'currency', 'currentBalance', 'notes', 'actions'];
     dataSource = new MatTableDataSource<AccountDto>();
     totalBalance = 0;
-
-    constructor(private financeService: FinanceService, private dialog: MatDialog) {}
 
     ngOnInit(): void {
         this.loadAccounts();

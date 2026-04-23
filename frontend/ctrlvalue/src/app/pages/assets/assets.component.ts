@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -28,15 +28,13 @@ import { AssetFormComponent } from './asset-form/asset-form.component';
     styleUrl: './assets.component.scss'
 })
 export class AssetsComponent implements OnInit {
+    private financeService = inject(FinanceService);
+    private snackBar = inject(MatSnackBar);
+    private dialog = inject(MatDialog);
+
     assets: Asset[] = [];
     loading = false;
     error: string | null = null;
-
-    constructor(
-        private financeService: FinanceService,
-        private snackBar: MatSnackBar,
-        private dialog: MatDialog
-    ) { }
 
     ngOnInit(): void {
         this.loadAssets();

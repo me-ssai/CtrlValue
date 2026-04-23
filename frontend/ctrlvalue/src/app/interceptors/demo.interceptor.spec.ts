@@ -1,7 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import {
     HttpClient,
-    HttpResponse,
     provideHttpClient,
     withInterceptors
 } from '@angular/common/http';
@@ -81,9 +80,8 @@ describe('demoInterceptor — demo environment', () => {
     });
 
     it('should intercept POST requests and return 201 without hitting network', () => {
-        let status: number | undefined;
         http.post('/api/accounts', { name: 'Demo Account' }).subscribe({
-            next: (res: any) => { status = res?.status ?? 201; }
+            next: (_res: any) => { /* ignored */ }
         });
 
         httpMock.expectNone('/api/accounts');
