@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -27,15 +27,13 @@ import { AuthService } from '../../services/auth.service';
   styleUrl: './entity-selector.component.scss'
 })
 export class EntitySelectorComponent implements OnInit {
+  private entityService = inject(EntityService);
+  private router = inject(Router);
+  private authService = inject(AuthService);
+
   entities: Entity[] = [];
   currentEntity: Entity | null = null;
   loading = false;
-
-  constructor(
-    private entityService: EntityService,
-    private router: Router,
-    private authService: AuthService,
-  ) { }
 
   ngOnInit(): void {
     // Subscribe to current entity
@@ -62,7 +60,7 @@ export class EntitySelectorComponent implements OnInit {
   }
 
   canAccessSiteAdmin(): boolean {
-    var currentUserRole = this.authService.getUserRole();
+    const currentUserRole = this.authService.getUserRole();
     return currentUserRole == "SiteAdmin" || currentUserRole == "SuperAdmin";
     // or this.authService.hasRole('SiteAdmin');
   }

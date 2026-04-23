@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -28,6 +28,10 @@ import { AuthService } from '../../services/auth.service';
     styleUrls: ['./register.component.scss']
 })
 export class RegisterComponent {
+    private authService = inject(AuthService);
+    private router = inject(Router);
+    private snackBar = inject(MatSnackBar);
+
     firstName = '';
     lastName = '';
     email = '';
@@ -35,11 +39,7 @@ export class RegisterComponent {
     confirmPassword = '';
     loading = false;
 
-    constructor(
-        private authService: AuthService,
-        private router: Router,
-        private snackBar: MatSnackBar
-    ) {
+    constructor() {
         if (this.authService.isAuthenticated) {
             this.router.navigate(['/dashboard']);
         }

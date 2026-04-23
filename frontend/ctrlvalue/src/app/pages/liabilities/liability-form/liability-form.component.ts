@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -31,18 +31,18 @@ export interface LiabilityDialogData {
     styleUrl: './liability-form.component.scss'
 })
 export class LiabilityFormComponent implements OnInit {
+    private fb = inject(FormBuilder);
+    private financeService = inject(FinanceService);
+    private dialogRef = inject<MatDialogRef<LiabilityFormComponent>>(MatDialogRef);
+    private snackBar = inject(MatSnackBar);
+    data = inject<LiabilityDialogData>(MAT_DIALOG_DATA);
+
     liabilityForm: FormGroup;
     isEditMode = false;
     liabilityId: string | null = null;
     loading = false;
 
-    constructor(
-        private fb: FormBuilder,
-        private financeService: FinanceService,
-        private dialogRef: MatDialogRef<LiabilityFormComponent>,
-        private snackBar: MatSnackBar,
-        @Inject(MAT_DIALOG_DATA) public data: LiabilityDialogData
-    ) {
+    constructor() {
         this.liabilityForm = this.fb.group({
             name: ['', [Validators.required, Validators.maxLength(256)]],
             category: ['', Validators.required],

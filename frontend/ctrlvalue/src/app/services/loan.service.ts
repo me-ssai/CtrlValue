@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Client } from './api.generated';
@@ -123,8 +123,10 @@ export interface LoanRateChangeRequest {
 
 @Injectable({ providedIn: 'root' })
 export class LoanService {
+  private client = inject(Client);
+  private http = inject(HttpClient);
+  private entityService = inject(EntityService);
 
-  constructor(private client: Client, private http: HttpClient, private entityService: EntityService) { }
 
   getAllLoans(): Observable<LoanDetailsDto[]> {
     const entityId = this.entityService.currentEntityId!;

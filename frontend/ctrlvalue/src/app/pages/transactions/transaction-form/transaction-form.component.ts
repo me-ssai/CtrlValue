@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -46,6 +46,12 @@ const INSTRUMENT_ASSET_CLASSES = new Set(['STOCK', 'ETF', 'BOND', 'CRYPTO', 'FUN
     styleUrl: './transaction-form.component.scss'
 })
 export class TransactionFormComponent implements OnInit, OnDestroy {
+    private fb = inject(FormBuilder);
+    private financeService = inject(FinanceService);
+    private dialogRef = inject<MatDialogRef<TransactionFormComponent>>(MatDialogRef);
+    private snackBar = inject(MatSnackBar);
+    data = inject<TransactionDialogData>(MAT_DIALOG_DATA);
+
     transactionForm: FormGroup;
     isEditMode = false;
     transactionId: string | null = null;
@@ -54,7 +60,7 @@ export class TransactionFormComponent implements OnInit, OnDestroy {
     accounts: AccountDto[] = [];
     instruments: InstrumentDto[] = [];
     transactionTypes = Object.values(TransactionType);
-    txnTypeDisplay: { [key: string]: string } = {
+    txnTypeDisplay: Record<string, string> = {
         [TransactionType.Income]: 'Income',
         [TransactionType.Expense]: 'Expense',
         [TransactionType.AssetPurchase]: 'Asset Purchase',
@@ -75,13 +81,7 @@ export class TransactionFormComponent implements OnInit, OnDestroy {
     private lastEdited: 'amount' | 'quantity' | 'unitPrice' | null = null;
     private subs = new Subscription();
 
-    constructor(
-        private fb: FormBuilder,
-        private financeService: FinanceService,
-        private dialogRef: MatDialogRef<TransactionFormComponent>,
-        private snackBar: MatSnackBar,
-        @Inject(MAT_DIALOG_DATA) public data: TransactionDialogData
-    ) {
+    constructor() {
         const today = new Date().toISOString().split('T')[0];
         this.transactionForm = this.fb.group({
             type: ['Expense', Validators.required],
@@ -177,7 +177,7 @@ export class TransactionFormComponent implements OnInit, OnDestroy {
     // ── Auto-calculation (amount = quantity × unitPrice) ──────────────────────
 
     private setupAutoCalculations(): void {
-        const fields: Array<'amount' | 'quantity' | 'unitPrice'> = ['amount', 'quantity', 'unitPrice'];
+        const fields: ('amount' | 'quantity' | 'unitPrice')[] = ['amount', 'quantity', 'unitPrice'];
         fields.forEach(field => {
             this.subs.add(
                 this.transactionForm.get(field)!.valueChanges.subscribe(() => {

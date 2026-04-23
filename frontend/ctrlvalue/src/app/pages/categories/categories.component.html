@@ -90,7 +90,7 @@
             <ng-container matColumnDef="expandedDetail">
                 <td mat-cell *matCellDef="let category" [attr.colspan]="displayedColumns.length">
                     <div class="element-detail"
-                         [@detailExpand]="category == expandedElement ? 'expanded' : 'collapsed'">
+                         [@detailExpand]="category === expandedElement ? 'expanded' : 'collapsed'">
                         <app-category-keywords [category]="category"></app-category-keywords>
                     </div>
                 </td>
